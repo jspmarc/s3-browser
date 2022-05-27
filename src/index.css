@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,400;0,900;1,100;1,400;1,900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --footer-height: 1.5rem;
+  --header-height: 3.5rem;
+  --outer-content-height: calc(var(--footer-height) + var(--header-height));
+
+  font-family: 'Lato', sans-serif;
+  font-size: clamp(14px, 1.85vmin, 20px);
+}
