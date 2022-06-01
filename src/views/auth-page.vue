@@ -14,7 +14,6 @@ const endpoint = ref('')
 
 const submit = (e: Event) => {
   e.preventDefault()
-  new FormData(e.target as HTMLFormElement).forEach(console.log)
   invoke('new_s3', {
     name: bucketName.value,
     accessKeyId: accessKeyId.value,
@@ -23,8 +22,8 @@ const submit = (e: Event) => {
     region: region.value,
     isPathStyle: urlStyle.value === 'path',
   })
-    .then(() => {
-      console.log('done creating S3')
+    .then((s) => {
+      console.log(JSON.stringify(s, null, 4))
     })
     .catch(alert)
 }
@@ -48,7 +47,7 @@ const submit = (e: Event) => {
     <input
       id="access-key-id"
       v-model="accessKeyId"
-      type="password"
+      type="text"
       name="access_key_id"
       placeholder="abcdefghijklmnopqrst"
       required
@@ -58,7 +57,7 @@ const submit = (e: Event) => {
     <input
       id="secret-access-key"
       v-model="secretAccessKey"
-      type="password"
+      type="text"
       name="secret_access_key"
       placeholder="abcdefghijklmnopqrstuvwxyzabcdefghijklmn"
       required
