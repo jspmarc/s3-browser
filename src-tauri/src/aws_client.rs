@@ -1,13 +1,7 @@
-use std::str::FromStr;
-use aws_sdk_s3::{
-  Client,
-  Credentials,
-  Config,
-  Endpoint,
-  Region,
-};
+use aws_sdk_s3::{Client, Config, Credentials, Endpoint, Region};
 use http::Uri;
-use serde::ser::{Serialize, Serializer, SerializeStruct};
+use serde::ser::{Serialize, SerializeStruct, Serializer};
+use std::str::FromStr;
 
 pub struct AwsClient {
   s3_client: Option<Client>,
@@ -29,18 +23,23 @@ impl AwsClient {
     region: String,
     is_path_style: bool,
   ) -> Self {
-    let cred = Credentials::new(access_key_id.clone(), secret_access_key.clone(), None, None, "");
+    let cred = Credentials::new(
+      access_key_id.clone(),
+      secret_access_key.clone(),
+      None,
+      None,
+      "",
+    );
     let conf = {
       if is_path_style {
-        Config::builder()
-          .endpoint_resolver(Endpoint::immutable(Uri::from_str(&endpoint).unwrap()))
+        Config::builder().endpoint_resolver(Endpoint::immutable(Uri::from_str(&endpoint).unwrap()))
       } else {
         Config::builder()
       }
     }
-      .credentials_provider(cred)
-      .region(Region::new(region.clone()))
-      .build();
+    .credentials_provider(cred)
+    .region(Region::new(region.clone()))
+    .build();
     let client = Client::from_conf(conf);
 
     Self {
@@ -58,7 +57,7 @@ impl AwsClient {
 impl Serialize for AwsClient {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
-      S: Serializer,
+    S: Serializer,
   {
     let mut state = serializer.serialize_struct("AwsClient", 5)?;
     state.serialize_field("access_key_id", &self.access_key_id)?;
@@ -109,11 +108,15 @@ impl AwsClient {
         keys.push(k.to_owned());
       }
     });
-    res.common_prefixes().unwrap_or_default().iter().for_each(|prefix| {
-      if let Some(k) = &prefix.prefix {
-        keys.push(k.clone());
-      }
-    });
+    res
+      .common_prefixes()
+      .unwrap_or_default()
+      .iter()
+      .for_each(|prefix| {
+        if let Some(k) = &prefix.prefix {
+          keys.push(k.clone());
+        }
+      });
     Ok(keys)
   }
 }
