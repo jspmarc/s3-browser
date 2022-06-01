@@ -14,7 +14,7 @@ const endpoint = ref('')
 
 const submit = (e: Event) => {
   e.preventDefault()
-  invoke('new_s3', {
+  invoke('init_app', {
     name: bucketName.value,
     accessKeyId: accessKeyId.value,
     secretAccessKey: secretAccessKey.value,
@@ -25,7 +25,7 @@ const submit = (e: Event) => {
     .then((s) => {
       console.log(JSON.stringify(s, null, 4))
     })
-    .catch(e => console.error(JSON.stringify(e, null, 4)))
+    .catch((e) => console.error(JSON.stringify(e, null, 4)))
 }
 </script>
 <template>

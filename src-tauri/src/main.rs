@@ -4,20 +4,24 @@
 )]
 
 mod aws_client;
-mod file_node;
 mod internal_error;
+use std::sync::Mutex;
+
 use aws_client::AwsClient;
 use internal_error::InternalError;
 
+struct CurrentClient(Mutex<Option<AwsClient>>);
+
 #[tauri::command]
-async fn new_s3(
+async fn init_app(
   name: String,
   access_key_id: String,
   secret_access_key: String,
   endpoint: String,
   region: String,
   is_path_style: bool,
-) -> Result<Vec<String>, InternalError> {
+  current_client: tauri::State<'_, CurrentClient>,
+) -> Result<(), InternalError> {
   let client = AwsClient::new(
     access_key_id,
     name,
@@ -26,15 +30,14 @@ async fn new_s3(
     region,
     is_path_style,
   );
-
-  let files = client.list_objects_in_folder("/").await;
-
-  files
+  *current_client.0.lock().unwrap() = Some(client);
+  Ok(())
 }
 
 fn main() {
   tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![new_s3])
+    .manage(CurrentClient(Mutex::new(None)))
+    .invoke_handler(tauri::generate_handler![init_app])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
