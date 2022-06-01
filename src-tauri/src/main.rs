@@ -3,27 +3,75 @@
   windows_subsystem = "windows"
 )]
 
-mod s3_client;
-use s3_client::S3Client;
+use std::str::FromStr;
 
-#[tauri::command]
-fn hello(user_name: String) -> String {
-  let s = format!("Hello, {}!", user_name);
-  println!("{}", s);
-  s.into()
+use aws_sdk_s3::{
+  Client,
+  Credentials,
+  Config,
+  Endpoint,
+  Region
+};
+use http::Uri;
+
+fn new_aws_client(
+  access_key_id: String,
+  secret_access_key: String,
+  endpoint: String,
+  region: String,
+  is_path_style: bool,
+) -> Client {
+  let cred = Credentials::new(access_key_id, secret_access_key, None, None, "");
+  let conf = {
+    if is_path_style {
+      Config::builder()
+        .endpoint_resolver(Endpoint::immutable(Uri::from_str(&endpoint).unwrap()))
+    } else {
+      Config::builder()
+    }
+  }
+    .credentials_provider(cred)
+    .region(Region::new(region))
+    .build();
+  let client = Client::from_conf(conf);
+
+  client
 }
 
 #[tauri::command]
-fn new_s3(bucket_url: String, access_key_id: String, secret_access_key: String) {
-  println!("Creating new S3 client");
-  let s3 = S3Client::new(&bucket_url, &access_key_id, &secret_access_key);
-  println!("Created an S3 client");
-  s3.print();
+async fn new_s3(
+  name: String,
+  access_key_id: String,
+  secret_access_key: String,
+  endpoint: String,
+  region: String,
+  is_path_style: bool,
+) {
+  let client = new_aws_client(access_key_id, secret_access_key, endpoint, region, is_path_style);
+  let req = client
+    .list_objects_v2()
+    .prefix("")
+    .bucket(name);
+  let res = req.send().await;
+  match res {
+    Ok(results) => {
+      for objs in results.contents {
+        objs.iter().for_each(|obj| {
+          if let Some(key) = &obj.key {
+            println!("{}", key);
+          }
+        });
+      }
+    }
+    Err(e) => {
+      println!("Error: {}", e);
+    }
+  }
 }
 
 fn main() {
   tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![hello, new_s3])
+    .invoke_handler(tauri::generate_handler![new_s3])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

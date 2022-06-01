@@ -29,7 +29,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "dev.jspmarc.s3-browser",
       "longDescription": "",
       "macOS": {
         "entitlements": null,

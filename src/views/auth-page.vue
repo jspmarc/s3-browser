@@ -5,47 +5,45 @@
 import { ref } from 'vue'
 import { invoke } from '@tauri-apps/api/tauri'
 
-const bucketUrl = ref('')
 const accessKeyId = ref('')
 const secretAccessKey = ref('')
-const name = ref('')
+const urlStyle = ref('path')
+const bucketName = ref('')
+const region = ref('')
+const endpoint = ref('')
 
 const submit = (e: Event) => {
   e.preventDefault()
+  new FormData(e.target as HTMLFormElement).forEach(console.log)
   invoke('new_s3', {
-    bucketUrl: bucketUrl.value,
+    name: bucketName.value,
     accessKeyId: accessKeyId.value,
     secretAccessKey: secretAccessKey.value,
-  }).then(() => {
-    console.log('done creating S3')
+    endpoint: endpoint.value,
+    region: region.value,
+    isPathStyle: urlStyle.value === 'path',
   })
+    .then(() => {
+      console.log('done creating S3')
+    })
+    .catch(alert)
 }
-
-// Invoke the command
-invoke('hello', { userName: 'world' }).then((n) => {
-  if (typeof n === 'string') {
-    console.log(n)
-    name.value = n
-  }
-})
 </script>
 <template>
-  name: {{ name }}
   <h1>Auth</h1>
   <form
     class="flex flex-col"
     @submit="submit"
   >
-    <label for="bucket-url">Bucket URL</label>
+    <label for="bucket_name">Bucket name</label>
     <input
-      id="bucket-url"
-      v-model="bucketUrl"
-      type="url"
-      name="bucket_url"
-      placeholder="https://the-best-bucket.s3-ap-southeast-1.amazonaws.com"
+      id="bucket_name"
+      v-model="bucketName"
+      type="text"
+      name="bucket_name"
+      placeholder="the-best-bucket"
       required
     >
-
     <label for="access-key-id">Access Key ID</label>
     <input
       id="access-key-id"
@@ -64,6 +62,46 @@ invoke('hello', { userName: 'world' }).then((n) => {
       name="secret_access_key"
       placeholder="abcdefghijklmnopqrstuvwxyzabcdefghijklmn"
       required
+    >
+
+    <span>AWS URL style:</span>
+    <div>
+      <input
+        id="path-style"
+        v-model="urlStyle"
+        name="url_style"
+        type="radio"
+        value="path"
+      >
+      <label for="path-style">Path style</label>
+    </div>
+
+    <div>
+      <input
+        id="virtual-hosted-style"
+        v-model="urlStyle"
+        name="url_style"
+        type="radio"
+        value="virtual"
+      >
+      <label for="virtual-hosted-style">Virtual-hosted style</label>
+    </div>
+
+    <label for="region">Region</label>
+    <input
+      id="region"
+      v-model="region"
+      type="text"
+      name="region"
+      placeholder="s3-ap-southeast-1"
+    >
+    <label for="host">Host (leave empty if using AWS)</label>
+    <input
+      id="host"
+      v-model="endpoint"
+      type="text"
+      name="host"
+      placeholder="https://is3.cloudhost.id/"
     >
 
     <button type="submit">
