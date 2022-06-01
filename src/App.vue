@@ -3,11 +3,14 @@
   lang="ts"
 >
 import { ref, onMounted, computed } from 'vue'
+import { invoke } from '@tauri-apps/api/tauri'
 import Auth from './views/auth-page.vue'
 import Browser from './views/browser-page.vue'
 import NotFound from './views/not-found-page.vue'
 
-const currentPath = ref(window.location.hash)
+const authRoute = '#/auth'
+
+const currentPath = ref(authRoute)
 const routes = {
   '/': Browser,
   '/auth': Auth,
@@ -23,7 +26,22 @@ const currentView = computed(() => {
 })
 onMounted(() => {
   window.addEventListener('hashchange', () => {
-    currentPath.value = window.location.hash
+    console.log(window.location.hash)
+    // if moving from auth to browser, check whether client has been
+    // initialized or not. If initialized, redirect; else alert.
+    if (window.location.hash !== authRoute) {
+      invoke('has_client').then((hasClient) => {
+        if (hasClient) {
+          currentPath.value = window.location.hash
+        } else {
+          window.location.hash = authRoute
+          // TODO: Find a phrase/word better (more fitting) than "login"
+          alert('Please login first')
+        }
+      })
+    } else {
+      currentPath.value = window.location.hash
+    }
   })
 })
 </script>
@@ -32,7 +50,7 @@ onMounted(() => {
   <header class="h-[var(--header-height)]">
     <nav>
       <a href="#/">Home</a>
-      <a href="#/auth">Auth</a>
+      <a :href="authRoute">Auth</a>
     </nav>
   </header>
   <main class="min-h-[calc(100vh-var(--outer-content-height))]">

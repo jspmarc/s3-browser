@@ -22,8 +22,8 @@ const submit = (e: Event) => {
     region: region.value,
     isPathStyle: urlStyle.value === 'path',
   })
-    .then((s) => {
-      console.log(JSON.stringify(s, null, 4))
+    .then(() => {
+      window.location.hash = '/'
     })
     .catch((e) => console.error(JSON.stringify(e, null, 4)))
 }

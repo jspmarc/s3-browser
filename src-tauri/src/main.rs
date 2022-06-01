@@ -13,6 +13,15 @@ use internal_error::InternalError;
 struct CurrentClient(Mutex<Option<AwsClient>>);
 
 #[tauri::command]
+fn has_client(current_client: tauri::State<'_, CurrentClient>) -> bool {
+  if let Some(_) = current_client.0.lock().unwrap().as_ref() {
+    true
+  } else {
+    false
+  }
+}
+
+#[tauri::command]
 async fn init_app(
   name: String,
   access_key_id: String,
@@ -37,7 +46,7 @@ async fn init_app(
 fn main() {
   tauri::Builder::default()
     .manage(CurrentClient(Mutex::new(None)))
-    .invoke_handler(tauri::generate_handler![init_app])
+    .invoke_handler(tauri::generate_handler![init_app, has_client])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
