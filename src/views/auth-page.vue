@@ -25,7 +25,7 @@ const submit = (e: Event) => {
     .then((s) => {
       console.log(JSON.stringify(s, null, 4))
     })
-    .catch(alert)
+    .catch(e => console.error(JSON.stringify(e, null, 4)))
 }
 </script>
 <template>

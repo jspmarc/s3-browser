@@ -4,8 +4,10 @@
 )]
 
 mod aws_client;
-use aws_client::AwsClient;
 mod file_node;
+mod internal_error;
+use aws_client::AwsClient;
+use internal_error::InternalError;
 
 #[tauri::command]
 async fn new_s3(
@@ -15,7 +17,7 @@ async fn new_s3(
   endpoint: String,
   region: String,
   is_path_style: bool,
-) -> Result<Vec<String>, String> {
+) -> Result<Vec<String>, InternalError> {
   let client = AwsClient::new(
     access_key_id,
     name,

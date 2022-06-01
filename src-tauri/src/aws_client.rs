@@ -1,3 +1,4 @@
+use crate::internal_error::InternalError;
 use aws_sdk_s3::{Client, Config, Credentials, Endpoint, Region};
 use http::Uri;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
@@ -72,9 +73,8 @@ impl Serialize for AwsClient {
 
 // S3 commands
 impl AwsClient {
-  // TODO: implement correct error type
   /// Lists objects inside a folder (prefix), "/" is equal to ""
-  pub async fn list_objects_in_folder(&self, prefix: &str) -> Result<Vec<String>, String> {
+  pub async fn list_objects_in_folder(&self, prefix: &str) -> Result<Vec<String>, InternalError> {
     // make "/" to ""
     let prefix: &str = {
       if prefix == "/" {
@@ -87,7 +87,7 @@ impl AwsClient {
     // get S3 client
     let client = match self.s3_client.as_ref() {
       Some(client) => client,
-      None => return Err("S3 client is not initialized".to_string()),
+      None => return Err(InternalError::ClientUninitialized),
     };
     // build request
     let req = client
@@ -99,7 +99,7 @@ impl AwsClient {
     let res = req.send().await;
     let res = match res {
       Ok(res) => res,
-      Err(e) => return Err(e.to_string()),
+      Err(e) => return Err(InternalError::ListObjectsError(e.to_string())),
     };
     // insert key results to a vector
     let mut keys: Vec<String> = vec![];
