@@ -13,7 +13,7 @@ use internal_error::InternalError;
 struct CurrentClient(Mutex<Option<AwsClient>>);
 
 #[tauri::command]
-fn has_client(current_client: tauri::State<'_, CurrentClient>) -> bool {
+fn has_client(current_client: tauri::State<CurrentClient>) -> bool {
   if let Some(_) = current_client.0.lock().unwrap().as_ref() {
     true
   } else {
@@ -22,14 +22,14 @@ fn has_client(current_client: tauri::State<'_, CurrentClient>) -> bool {
 }
 
 #[tauri::command]
-async fn init_app(
+fn init_app(
   name: String,
   access_key_id: String,
   secret_access_key: String,
   endpoint: String,
   region: String,
   is_path_style: bool,
-  current_client: tauri::State<'_, CurrentClient>,
+  current_client: tauri::State<CurrentClient>,
 ) -> Result<(), InternalError> {
   let client = AwsClient::new(
     access_key_id,
