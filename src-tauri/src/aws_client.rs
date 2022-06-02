@@ -2,7 +2,7 @@ use crate::internal_error::InternalError;
 use aws_sdk_s3::{Client, Config, Credentials, Endpoint, Region};
 use http::Uri;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 pub struct AwsClient {
   s3_client: Option<Client>,
@@ -73,17 +73,16 @@ impl Serialize for AwsClient {
 
 // S3 commands
 impl AwsClient {
-  /// Lists objects inside a folder (prefix), "/" is equal to ""
-  pub async fn list_objects_in_folder(&self, prefix: &str) -> Result<Vec<String>, InternalError> {
-    // make "/" to ""
-    let prefix: &str = {
-      if prefix == "/" {
-        ""
-      } else {
-        prefix
-      }
-    };
-
+  /// Lists objects inside a folder (prefix)
+  /// returns a HashMap<String, Vec<String>> where the keys are: "folders" and "files"
+  ///
+  /// # Arguments
+  ///
+  /// - `prefix` - folder name (e.g.: "", "foo/bar")
+  pub async fn list_objects_in_folder(
+    &self,
+    prefix: &str,
+  ) -> Result<HashMap<String, Vec<String>>, InternalError> {
     // get S3 client
     let client = match self.s3_client.as_ref() {
       Some(client) => client,
@@ -102,10 +101,12 @@ impl AwsClient {
       Err(e) => return Err(InternalError::ListObjectsError(e.to_string())),
     };
     // insert key results to a vector
-    let mut keys: Vec<String> = vec![];
+    let mut keys: HashMap<String, Vec<String>> = HashMap::new();
+    keys.insert("files".into(), vec![]);
+    keys.insert("folders".into(), vec![]);
     res.contents().unwrap_or_default().iter().for_each(|key| {
       if let Some(k) = key.key() {
-        keys.push(k.to_owned());
+        keys.get_mut("files").unwrap().push(k.to_owned());
       }
     });
     res
@@ -114,7 +115,7 @@ impl AwsClient {
       .iter()
       .for_each(|prefix| {
         if let Some(k) = &prefix.prefix {
-          keys.push(k.clone());
+          keys.get_mut("folders").unwrap().push(k.to_owned());
         }
       });
     Ok(keys)

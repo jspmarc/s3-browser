@@ -5,31 +5,24 @@
 
 mod aws_client;
 mod internal_error;
-use std::sync::Mutex;
+mod tauri_commands;
+use tauri::async_runtime::Mutex;
+use tauri_commands::*;
 
 use aws_client::AwsClient;
 use internal_error::InternalError;
 
-struct CurrentClient(Mutex<Option<AwsClient>>);
+pub struct CurrentClient(Mutex<Option<AwsClient>>);
 
 #[tauri::command]
-fn has_client(current_client: tauri::State<CurrentClient>) -> bool {
-  if let Some(_) = current_client.0.lock().unwrap().as_ref() {
-    true
-  } else {
-    false
-  }
-}
-
-#[tauri::command]
-fn init_app(
+async fn init_app(
   name: String,
   access_key_id: String,
   secret_access_key: String,
   endpoint: String,
   region: String,
   is_path_style: bool,
-  current_client: tauri::State<CurrentClient>,
+  current_client: tauri::State<'_, CurrentClient>,
 ) -> Result<(), InternalError> {
   let client = AwsClient::new(
     access_key_id,
@@ -39,14 +32,19 @@ fn init_app(
     region,
     is_path_style,
   );
-  *current_client.0.lock().unwrap() = Some(client);
+  *current_client.0.lock().await = Some(client);
   Ok(())
+}
+
+#[tauri::command]
+async fn has_client(current_client: tauri::State<'_, CurrentClient>) -> Result<bool, ()> {
+  Ok(current_client.0.lock().await.is_some())
 }
 
 fn main() {
   tauri::Builder::default()
     .manage(CurrentClient(Mutex::new(None)))
-    .invoke_handler(tauri::generate_handler![init_app, has_client])
+    .invoke_handler(tauri::generate_handler![init_app, has_client, list_objects])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
