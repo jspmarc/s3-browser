@@ -2,9 +2,9 @@
   setup
   lang="ts"
 >
-import { invoke } from '@tauri-apps/api'
 import { ref, computed, watch } from 'vue'
 import type TObjectsList from '../../types/TObjectsList'
+import { list } from '../../controllers/S3Object'
 
 const props = defineProps({
   folder: {
@@ -36,12 +36,12 @@ watch(props, (newValue) => {
 })
 
 const updateLists = (l: TObjectsList) => {
-  files.value = l.files
-  folders.value = l.folders
+  files.value = l.files ?? []
+  folders.value = l.folders ?? []
 }
 
 const getObjects = () => {
-  invoke('list_objects', { folder: folder.value })
+  list(folder.value)
     .then((v) => updateLists(v as TObjectsList))
     .catch(console.error)
 }
