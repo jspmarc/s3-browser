@@ -120,4 +120,51 @@ impl AwsClient {
       });
     Ok(keys)
   }
+
+  /// HEAD an object with certain `key`
+  /// returns a HashMap<String, String> where the keys are "content_type" and "key" (as in object
+  /// key). If content_type
+  ///
+  /// # Arguments
+  ///
+  /// - `key` - object/file key/name
+  pub async fn head_object(&self, key: &str) -> Result<HashMap<String, String>, InternalError> {
+    let guess_type = || {
+      mime_guess::from_path(key.split('/').nth_back(0).unwrap())
+        .first_or_octet_stream()
+        .to_string()
+    };
+
+    // get S3 client
+    let client = match self.s3_client.as_ref() {
+      Some(client) => client,
+      None => return Err(InternalError::ClientUninitialized),
+    };
+    // build request
+    let req = client.head_object().key(key).bucket(&self.bucket_name);
+    // send and parse response
+    let res = req.send().await;
+    let res = match res {
+      Ok(res) => res,
+      Err(e) => return Err(InternalError::HeadObjectError(e.to_string())),
+    };
+    let content_type = match res.content_type() {
+      Some(ct) => Some(ct.to_string()),
+      _ => None,
+    };
+    let content_type = match content_type {
+      Some(ct) => {
+        if ct == "application/octet-stream".to_string() {
+          guess_type()
+        } else {
+          ct
+        }
+      }
+      _ => guess_type(),
+    };
+    let mut retval = HashMap::<String, String>::new();
+    retval.insert("key".into(), key.into());
+    retval.insert("content_type".into(), content_type);
+    Ok(retval)
+  }
 }

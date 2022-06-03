@@ -44,7 +44,12 @@ async fn has_client(current_client: tauri::State<'_, CurrentClient>) -> Result<b
 fn main() {
   tauri::Builder::default()
     .manage(CurrentClient(Mutex::new(None)))
-    .invoke_handler(tauri::generate_handler![init_app, has_client, list_objects])
+    .invoke_handler(tauri::generate_handler![
+      init_app,
+      has_client,
+      list_objects,
+      head_object
+    ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

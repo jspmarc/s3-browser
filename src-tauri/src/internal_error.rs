@@ -4,7 +4,8 @@ use serde::ser::{Serialize, Serializer};
 pub enum InternalError {
   ClientUninitialized,
   ListObjectsError(String),
-  Other(String),
+  HeadObjectError(String),
+  // Other(String),
 }
 
 impl Serialize for InternalError {
@@ -19,9 +20,11 @@ impl Serialize for InternalError {
       InternalError::ListObjectsError(s) => {
         serializer.serialize_newtype_variant("InternalError", 1, "ListObjectsError", &s)
       }
-      InternalError::Other(s) => {
-        serializer.serialize_newtype_variant("InternalError", 2, "Other", &s)
-      }
+      InternalError::HeadObjectError(s) => {
+        serializer.serialize_newtype_variant("InternalError", 2, "GetObjectError", &s)
+      } // InternalError::Other(s) => {
+        //   serializer.serialize_newtype_variant("InternalError", 3, "Other", &s)
+        // }
     }
   }
 }

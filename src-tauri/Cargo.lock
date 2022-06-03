@@ -60,6 +60,7 @@ dependencies = [
  "aws-config",
  "aws-sdk-s3",
  "http",
+ "mime",
  "mime_guess",
  "serde",
  "serde_json",
