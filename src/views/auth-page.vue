@@ -15,7 +15,6 @@ const endpoint = ref('')
 
 const submit = (e: Event) => {
   e.preventDefault()
-  store.commit('reset')
   const ep = endpoint.value ? endpoint.value : 'amazonaws.com'
   invoke('init_app', {
     name: bucketName.value,
@@ -26,6 +25,13 @@ const submit = (e: Event) => {
     isPathStyle: urlStyle.value === 'path',
   })
     .then(() => {
+      store.commit('reset')
+      store.commit('updateBaseUrl', (() => {
+        if (urlStyle.value === 'path') return `${endpoint.value}/${bucketName.value}/`
+        else if (endpoint.value.indexOf('aws') !== -1)
+          return `https://${bucketName.value}.s3-${region.value}.${endpoint.value}/`
+        else return `https://${bucketName.value}.${region.value}.${endpoint.value}/`
+      })())
       window.location.hash = '/'
     })
     .catch((e) => console.error(JSON.stringify(e, null, 4)))

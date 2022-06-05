@@ -6,6 +6,7 @@ import './index.css'
 const store = createStore({
   state() {
     return {
+      baseUrl: '',
       keys: [''],
       isFolder: true,
     }
@@ -24,7 +25,11 @@ const store = createStore({
     openFile(state) {
       state.isFolder = false
     },
+    updateBaseUrl(state, url) {
+      state.baseUrl = url
+    },
     reset(state) {
+      state.baseUrl = ''
       state.keys = ['']
       state.isFolder = true
     },

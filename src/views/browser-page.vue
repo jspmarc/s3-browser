@@ -6,13 +6,12 @@ import { ref, computed } from 'vue'
 import { useStore } from 'vuex'
 import ObjectsPane from '../components/browser-page/objects-pane.vue'
 import { head } from '../controllers/S3Object'
-import { generateClient } from '../controllers/Client'
 import type TObjectHead from '../types/TObjectHead'
 
 const store = useStore()
 
 const fileMetadata = ref<TObjectHead | null>(null)
-const baseUrl = ref('')
+const baseUrl = ref(store.state.baseUrl)
 
 const currentKey = computed(() =>
   store.state.keys.reduce((combined: string, cur: string, idx: number) => {
@@ -34,11 +33,10 @@ const openFolder = (f: string) => {
   store.commit('addKey', f)
   store.commit('openFolder')
 }
-generateClient().then((client) => (baseUrl.value = client.generateUrl()))
 </script>
 
 <template>
-  <div class="bg-gray-300 grid grid-cols-[1fr_9fr] mb-2 rounded-md w-full xl:grid-cols-[1fr_13fr]">
+  <div class="bg-gray-300 grid grid-cols-[1fr_9fr] mb-2 rounded-md w-full xl:grid-cols-[1fr_19fr]">
     <button
       class="bg-white mr-2 px-2 py-1 rounded-md hover:bg-slate-100"
       @click="
@@ -102,7 +100,7 @@ generateClient().then((client) => (baseUrl.value = client.generateUrl()))
 
 <style scoped>
 .preview {
-  @apply bg-white max-h-[85vh] min-h-[80vh] w-auto;
+  @apply bg-white max-h-[85vh] min-h-[80vh] rounded-md w-auto;
 }
 
 .preview.no-w {

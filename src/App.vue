@@ -48,7 +48,7 @@ onMounted(() => {
 <template>
   <header class="bg-gray-400 grid grid-cols-1 h-[var(--header-height)]">
     <nav class="flex items-center justify-between px-4">
-      <a href="#/">Files</a>
+      <a href="#/">Browse</a>
       <a :href="authRoute">Change S3</a>
     </nav>
   </header>
