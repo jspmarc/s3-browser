@@ -53,6 +53,21 @@ impl AwsClient {
       is_path_style,
     }
   }
+
+  pub fn get_detail(&self) -> HashMap<String, String> {
+    let mut result: HashMap<String, String> = HashMap::new();
+    result.insert("access_key_id".to_string(), self.access_key_id.clone());
+    result.insert("bucket_name".to_string(), self.bucket_name.clone());
+    result.insert(
+      "secret_access_key".to_string(),
+      self.secret_access_key.clone(),
+    );
+    result.insert("endpoint".to_string(), self.endpoint.clone());
+    result.insert("region".to_string(), self.region.clone());
+    result.insert("is_path_style".to_string(), self.is_path_style.to_string());
+
+    result
+  }
 }
 
 impl Serialize for AwsClient {

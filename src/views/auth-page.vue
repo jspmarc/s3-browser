@@ -14,11 +14,12 @@ const endpoint = ref('')
 
 const submit = (e: Event) => {
   e.preventDefault()
+  const ep = endpoint.value ? endpoint.value : 'amazonaws.com'
   invoke('init_app', {
     name: bucketName.value,
     accessKeyId: accessKeyId.value,
     secretAccessKey: secretAccessKey.value,
-    endpoint: endpoint.value,
+    endpoint: ep,
     region: region.value,
     isPathStyle: urlStyle.value === 'path',
   })
@@ -29,7 +30,6 @@ const submit = (e: Event) => {
 }
 </script>
 <template>
-  <h1>Auth</h1>
   <form
     class="flex flex-col"
     @submit="submit"
@@ -100,7 +100,7 @@ const submit = (e: Event) => {
       v-model="endpoint"
       type="text"
       name="host"
-      placeholder="https://is3.cloudhost.id/"
+      placeholder="digitaloceanspaces.com"
     >
 
     <button type="submit">

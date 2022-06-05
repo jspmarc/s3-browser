@@ -30,3 +30,13 @@ pub async fn head_object(
 
   Ok(result)
 }
+
+#[tauri::command]
+pub async fn get_client_detail(
+  current_client: tauri::State<'_, CurrentClient>,
+) -> Result<HashMap<String, String>, InternalError> {
+  match current_client.0.lock().await.as_ref() {
+    Some(client) => Ok(client.get_detail()),
+    _ => Err(InternalError::ClientUninitialized),
+  }
+}

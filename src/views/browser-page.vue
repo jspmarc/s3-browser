@@ -4,26 +4,24 @@
 >
 import ObjectsPane from '../components/browser-page/objects-pane.vue'
 import { head } from '../controllers/S3Object'
-import { ref, watch } from 'vue'
+import { generateClient } from '../controllers/Client'
+import { ref } from 'vue'
 import type TObjectHead from '../types/TObjectHead'
 
 const visited = ref<string[]>([''])
 const fileMetadata = ref<TObjectHead | null>(null)
 const baseUrl = ref('')
 
-watch(visited, (newF) => {
-  console.log(baseUrl.value + newF)
-})
 const openFile = (f: string) => {
   visited.value.push(f)
   head(f)
     .then((r) => (fileMetadata.value = r))
     .catch(console.error)
 }
+generateClient().then((client) => (baseUrl.value = client.generateUrl()))
 </script>
 
 <template>
-  <h1>Browser</h1>
   folder: {{ visited.at(-1) }}
   <button
     @click="

@@ -26,7 +26,6 @@ const currentView = computed(() => {
 })
 onMounted(() => {
   window.addEventListener('hashchange', () => {
-    console.log(window.location.hash)
     // if moving from auth to browser, check whether client has been
     // initialized or not. If initialized, redirect; else alert.
     if (window.location.hash !== authRoute) {
