@@ -1,14 +1,14 @@
 import { createApp } from 'vue'
 import { createStore } from 'vuex'
 import App from './App.vue'
+import { defaultFolder } from './types/TFileNode'
 import './index.css'
 
 const store = createStore({
   state() {
     return {
       baseUrl: '',
-      keys: [''],
-      isFolder: true,
+      keys: [defaultFolder],
     }
   },
 
@@ -19,19 +19,12 @@ const store = createStore({
     popKey(state) {
       state.keys.pop()
     },
-    openFolder(state) {
-      state.isFolder = true
-    },
-    openFile(state) {
-      state.isFolder = false
-    },
     updateBaseUrl(state, url) {
       state.baseUrl = url
     },
     reset(state) {
       state.baseUrl = ''
-      state.keys = ['']
-      state.isFolder = true
+      state.keys = [defaultFolder]
     },
   },
 })

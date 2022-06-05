@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api'
 import TObjectsList from '../types/TObjectsList'
 import TObjectHead from '../types/TObjectHead'
 
-export const list = async (prefix: string) => {
+export const list = async (prefix: string): Promise<TObjectsList> => {
   try {
     const result: TObjectsList = await invoke('list_objects', { folder: prefix })
     return result

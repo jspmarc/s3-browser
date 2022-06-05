@@ -5,6 +5,7 @@
 import { ref, computed, watch } from 'vue'
 import FileItem from './file-item.vue'
 import type TObjectsList from '../../types/TObjectsList'
+import type TFileNode from '../../types/TFileNode'
 import { list } from '../../controllers/S3Object'
 
 const props = defineProps({
@@ -14,14 +15,13 @@ const props = defineProps({
   },
 })
 
-const files = ref<string[]>([])
-const folders = ref<string[]>([])
-const folder = ref(props.folder)
+const files = ref<TFileNode[]>([])
+const folders = ref<TFileNode[]>([])
+const currentFolderKey = ref(props.folder)
 const searchQuery = ref('')
 
 defineEmits<{
-  (e: 'openFile', key: string): void
-  (e: 'openFolder', folder: string): void
+  (e: 'open', obj: TFileNode): void
 }>()
 
 const lists = computed(() => {
@@ -32,7 +32,7 @@ const lists = computed(() => {
 })
 
 watch(props, (newValue) => {
-  folder.value = newValue.folder
+  currentFolderKey.value = newValue.folder
   getObjects()
 })
 
@@ -42,7 +42,7 @@ const updateLists = (l: TObjectsList) => {
 }
 
 const getObjects = () => {
-  list(folder.value)
+  list(currentFolderKey.value)
     .then((v) => updateLists(v as TObjectsList))
     .catch(console.error)
 }
@@ -60,24 +60,22 @@ getObjects()
     >
     <ul>
       <file-item
-        v-for="f in lists.folders.filter((f) => new RegExp(searchQuery, 'i').test(f))"
-        :key="f"
+        v-for="f in lists.folders.filter((f) => new RegExp(searchQuery, 'i').test(f.name))"
+        :key="f.name"
+        :file="f"
         class="cursor-pointer"
-        @click="$emit('openFolder', f)"
-      >
-        {{ f }}
-      </file-item>
+        @open="$emit('open', f)"
+      />
     </ul>
     <hr>
     <ul>
       <file-item
-        v-for="f in lists.files.filter((f) => new RegExp(searchQuery, 'i').test(f))"
-        :key="f"
+        v-for="f in lists.files.filter((f) => new RegExp(searchQuery, 'i').test(f.name))"
+        :key="f.name"
+        :file="f"
         class="cursor-pointer"
-        @click="$emit('openFile', f)"
-      >
-        {{ f }}
-      </file-item>
+        @open="$emit('open', f)"
+      />
     </ul>
   </div>
 </template>

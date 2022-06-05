@@ -6,6 +6,7 @@ import { ref, computed } from 'vue'
 import { useStore } from 'vuex'
 import ObjectsPane from '../components/browser-page/objects-pane.vue'
 import { head } from '../controllers/S3Object'
+import type TFileNode from '../types/TFileNode'
 import type TObjectHead from '../types/TObjectHead'
 
 const store = useStore()
@@ -13,25 +14,15 @@ const store = useStore()
 const fileMetadata = ref<TObjectHead | null>(null)
 const baseUrl = ref(store.state.baseUrl)
 
-const currentKey = computed(() =>
-  store.state.keys.reduce((combined: string, cur: string, idx: number) => {
-    if (idx !== store.state.keys.length - 1) return combined + cur + '/'
+const currentObj = computed<TFileNode>(() => store.state.keys.at(-1))
 
-    return combined + cur + (store.state.isFolder ? '/' : '')
-  })
-)
-
-const openFile = (f: string) => {
+const open = (f: TFileNode) => {
+  if (!f.is_folder) {
+    head(f.s3_key)
+      .then((r) => (fileMetadata.value = r))
+      .catch(console.error)
+  }
   store.commit('addKey', f)
-  store.commit('openFile')
-  head(f)
-    .then((r) => (fileMetadata.value = r))
-    .catch(console.error)
-}
-
-const openFolder = (f: string) => {
-  store.commit('addKey', f)
-  store.commit('openFolder')
 }
 </script>
 
@@ -53,46 +44,45 @@ const openFolder = (f: string) => {
     >
       <span v-if="!fileMetadata">folder: </span>
       <span v-else>file: </span>
-      <span class="w-full">{{ currentKey }}</span>
+      <span class="w-full">{{ currentObj.name ?? 'undefined' }}</span>
     </div>
   </div>
   <hr>
   <objects-pane
     v-if="!fileMetadata"
-    :folder="currentKey"
-    @open-folder="(f) => openFolder(f)"
-    @open-file="(f) => openFile(f)"
+    :folder="currentObj.s3_key"
+    @open="(f) => open(f)"
   />
   <template v-else>
     <img
       v-if="fileMetadata.content_type.startsWith('image')"
       class="preview"
-      :src="baseUrl + currentKey"
-      :alt="currentKey"
+      :src="baseUrl + currentObj.s3_key"
+      :alt="`${currentObj.name} failed to load.`"
     >
     <video
       v-else-if="fileMetadata.content_type.startsWith('video')"
       controls
       class="preview"
-      :src="baseUrl + currentKey"
-      :alt="currentKey"
+      :src="baseUrl + currentObj.s3_key"
+      :alt="currentObj"
       :type="fileMetadata.content_type"
     />
     <audio
       v-else-if="fileMetadata.content_type.startsWith('audio')"
       controls
       class="preview"
-      :src="baseUrl + currentKey"
+      :src="baseUrl + currentObj.s3_key"
     />
     <iframe
       v-else-if="fileMetadata.content_type.startsWith('text')"
       class="preview no-w"
-      :src="baseUrl + currentKey"
+      :src="baseUrl + currentObj.s3_key"
     />
     <iframe
       v-else
       class="preview no-w"
-      :src="`https://docs.google.com/gview?url=${baseUrl + currentKey}&embedded=true`"
+      :src="`https://docs.google.com/gview?url=${baseUrl + currentObj.s3_key}&embedded=true`"
       frameborder="0"
     />
   </template>

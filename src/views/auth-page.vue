@@ -33,10 +33,14 @@ const submit = (e: Event) => {
       store.commit(
         'updateBaseUrl',
         (() => {
-          if (urlStyle.value === 'path') return `${endpoint.value}/${bucketName.value}/`
-          else if (endpoint.value.indexOf('aws') !== -1)
+          if (urlStyle.value === 'path') {
+            return `${endpoint.value}/${bucketName.value}/`
+          } else if (!endpoint.value || endpoint.value.indexOf('aws') !== -1) {
+            endpoint.value = 'amazonaws.com'
             return `https://${bucketName.value}.s3-${region.value}.${endpoint.value}/`
-          else return `https://${bucketName.value}.${region.value}.${endpoint.value}/`
+          } else {
+            return `https://${bucketName.value}.${region.value}.${endpoint.value}/`
+          }
         })()
       )
       window.location.hash = '/'

@@ -1,6 +1,8 @@
+import type TFileNode from './TFileNode'
+
 type TObjectsList = {
-  files?: string[]
-  folders?: string[]
+  files?: TFileNode[]
+  folders?: TFileNode[]
 }
 
 export default TObjectsList

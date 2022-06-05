@@ -1,3 +1,4 @@
+use crate::file_node::FileNode;
 use crate::internal_error::InternalError;
 use aws_sdk_s3::{Client, Config, Credentials, Endpoint, Region};
 use http::Uri;
@@ -82,7 +83,7 @@ impl AwsClient {
   pub async fn list_objects_in_folder(
     &self,
     prefix: &str,
-  ) -> Result<HashMap<String, Vec<String>>, InternalError> {
+  ) -> Result<HashMap<String, Vec<FileNode>>, InternalError> {
     // get S3 client
     let client = match self.s3_client.as_ref() {
       Some(client) => client,
@@ -101,15 +102,23 @@ impl AwsClient {
       Err(e) => return Err(InternalError::ListObjectsError(e.to_string())),
     };
     // insert key results to a vector
-    let mut keys: HashMap<String, Vec<String>> = HashMap::new();
+    let mut keys: HashMap<String, Vec<FileNode>> = HashMap::new();
     keys.insert("files".into(), vec![]);
     keys.insert("folders".into(), vec![]);
-    res.contents().unwrap_or_default().iter().for_each(|key| {
-      if let Some(k) = key.key() {
-        keys
-          .get_mut("files")
-          .unwrap()
-          .push(k.split('/').last().unwrap().to_string())
+    res.contents().unwrap_or_default().iter().for_each(|obj| {
+      if let Some(k) = obj.key() {
+        let d = match obj.last_modified {
+          Some(d) => Some(d.secs()),
+          _ => None,
+        };
+        let file = FileNode::new(
+          d,
+          false,
+          k.split('/').last().unwrap().to_string(),
+          k.to_owned(),
+          obj.size,
+        );
+        keys.get_mut("files").unwrap().push(file)
       }
     });
     res
@@ -118,10 +127,14 @@ impl AwsClient {
       .iter()
       .for_each(|prefix| {
         if let Some(k) = &prefix.prefix {
-          keys
-            .get_mut("folders")
-            .unwrap()
-            .push(k.split('/').nth_back(1).unwrap().to_owned())
+          let folder = FileNode::new(
+            None,
+            true,
+            k.split('/').nth_back(1).unwrap().to_string(),
+            k.to_owned(),
+            0,
+          );
+          keys.get_mut("folders").unwrap().push(folder)
         }
       });
     Ok(keys)
