@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@tauri-apps/api": "1.0.0-rc.6",
-    "vue": "^3.2.36"
+    "vue": "^3.2.36",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@tauri-apps/cli": "1.0.0-rc.13",

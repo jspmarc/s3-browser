@@ -2,20 +2,22 @@
   setup
   lang="ts"
 >
+import { ref, computed } from 'vue'
+import { useStore } from 'vuex'
 import ObjectsPane from '../components/browser-page/objects-pane.vue'
 import { head } from '../controllers/S3Object'
 import { generateClient } from '../controllers/Client'
-import { ref, computed } from 'vue'
 import type TObjectHead from '../types/TObjectHead'
 
-const visited = ref<string[]>([''])
+const store = useStore()
+
 const fileMetadata = ref<TObjectHead | null>(null)
 const baseUrl = ref('')
 
-const currentKey = computed(() => visited.value.at(-1))
+const currentKey = computed(() => store.state.keys.at(-1))
 
 const openFile = (f: string) => {
-  visited.value.push(f)
+  store.commit('addKey', f)
   head(f)
     .then((r) => (fileMetadata.value = r))
     .catch(console.error)
@@ -29,7 +31,7 @@ generateClient().then((client) => (baseUrl.value = client.generateUrl()))
       class="bg-white mr-2 px-2 py-1 rounded-md hover:bg-slate-100"
       @click="
         () => {
-          visited.pop()
+          store.commit('popKey')
           fileMetadata = null
         }
       "
@@ -46,7 +48,7 @@ generateClient().then((client) => (baseUrl.value = client.generateUrl()))
   <objects-pane
     v-if="!fileMetadata"
     :folder="currentKey"
-    @open-folder="(f) => visited.push(f)"
+    @open-folder="(f) => store.commit('addKey', f)"
     @open-file="(f) => openFile(f)"
   />
   <template v-else>
