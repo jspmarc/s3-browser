@@ -121,7 +121,10 @@ impl AwsClient {
     keys.insert("folders".into(), vec![]);
     res.contents().unwrap_or_default().iter().for_each(|key| {
       if let Some(k) = key.key() {
-        keys.get_mut("files").unwrap().push(k.to_owned());
+        keys
+          .get_mut("files")
+          .unwrap()
+          .push(k.split('/').last().unwrap().to_string())
       }
     });
     res
@@ -130,7 +133,10 @@ impl AwsClient {
       .iter()
       .for_each(|prefix| {
         if let Some(k) = &prefix.prefix {
-          keys.get_mut("folders").unwrap().push(k.to_owned());
+          keys
+            .get_mut("folders")
+            .unwrap()
+            .push(k.split('/').nth_back(1).unwrap().to_owned())
         }
       });
     Ok(keys)

@@ -3,6 +3,7 @@
   lang="ts"
 >
 import { ref } from 'vue'
+import { useStore } from 'vuex'
 import { invoke } from '@tauri-apps/api/tauri'
 
 const accessKeyId = ref('')
@@ -14,6 +15,7 @@ const endpoint = ref('')
 
 const submit = (e: Event) => {
   e.preventDefault()
+  store.commit('reset')
   const ep = endpoint.value ? endpoint.value : 'amazonaws.com'
   invoke('init_app', {
     name: bucketName.value,

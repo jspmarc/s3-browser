@@ -14,13 +14,25 @@ const store = useStore()
 const fileMetadata = ref<TObjectHead | null>(null)
 const baseUrl = ref('')
 
-const currentKey = computed(() => store.state.keys.at(-1))
+const currentKey = computed(() =>
+  store.state.keys.reduce((combined: string, cur: string, idx: number) => {
+    if (idx !== store.state.keys.length - 1) return combined + cur + '/'
+
+    return combined + cur + (store.state.isFolder ? '/' : '')
+  })
+)
 
 const openFile = (f: string) => {
   store.commit('addKey', f)
+  store.commit('openFile')
   head(f)
     .then((r) => (fileMetadata.value = r))
     .catch(console.error)
+}
+
+const openFolder = (f: string) => {
+  store.commit('addKey', f)
+  store.commit('openFolder')
 }
 generateClient().then((client) => (baseUrl.value = client.generateUrl()))
 </script>
@@ -50,7 +62,7 @@ generateClient().then((client) => (baseUrl.value = client.generateUrl()))
   <objects-pane
     v-if="!fileMetadata"
     :folder="currentKey"
-    @open-folder="(f) => store.commit('addKey', f)"
+    @open-folder="(f) => openFolder(f)"
     @open-file="(f) => openFile(f)"
   />
   <template v-else>

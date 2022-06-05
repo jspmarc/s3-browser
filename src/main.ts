@@ -7,6 +7,7 @@ const store = createStore({
   state() {
     return {
       keys: [''],
+      isFolder: true,
     }
   },
 
@@ -16,6 +17,16 @@ const store = createStore({
     },
     popKey(state) {
       state.keys.pop()
+    },
+    openFolder(state) {
+      state.isFolder = true
+    },
+    openFile(state) {
+      state.isFolder = false
+    },
+    reset(state) {
+      state.keys = ['']
+      state.isFolder = true
     },
   },
 })
