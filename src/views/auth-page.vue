@@ -31,80 +31,134 @@ const submit = (e: Event) => {
 </script>
 <template>
   <form
-    class="flex flex-col"
+    class="bg-gray-300 flex flex-col p-4 rounded-xl"
     @submit="submit"
   >
-    <label for="bucket_name">Bucket name</label>
+    <label
+      class="label-class"
+      for="bucket_name"
+    >
+      Bucket name
+    </label>
     <input
       id="bucket_name"
       v-model="bucketName"
+      class="input-class"
       type="text"
       name="bucket_name"
       placeholder="the-best-bucket"
       required
     >
-    <label for="access-key-id">Access Key ID</label>
+
+    <label
+      class="label-class"
+      for="access-key-id"
+    >
+      Access Key ID
+    </label>
     <input
       id="access-key-id"
       v-model="accessKeyId"
+      class="input-class"
       type="text"
       name="access_key_id"
       placeholder="abcdefghijklmnopqrst"
       required
     >
 
-    <label for="secret-access-key">Secret Access Key</label>
+    <label
+      class="label-class"
+      for="secret-access-key"
+    >
+      Secret Access Key
+    </label>
     <input
       id="secret-access-key"
       v-model="secretAccessKey"
+      class="input-class"
       type="text"
       name="secret_access_key"
       placeholder="abcdefghijklmnopqrstuvwxyzabcdefghijklmn"
       required
     >
 
-    <span>AWS URL style:</span>
-    <div>
-      <input
-        id="path-style"
-        v-model="urlStyle"
-        name="url_style"
-        type="radio"
-        value="path"
-      >
-      <label for="path-style">Path style</label>
+    <div class="mb-2">
+      <span class="label-class">URL style:</span>
+      <div>
+        <input
+          id="path-style"
+          v-model="urlStyle"
+          name="url_style"
+          type="radio"
+          value="path"
+        >
+        <label
+          class="ml-2"
+          for="path-style"
+        >
+          Path style
+        </label>
+      </div>
+      <div>
+        <input
+          id="virtual-hosted-style"
+          v-model="urlStyle"
+          name="url_style"
+          type="radio"
+          value="virtual"
+        >
+        <label
+          class="ml-2"
+          for="virtual-hosted-style"
+        >
+          Virtual-hosted style
+        </label>
+      </div>
     </div>
 
-    <div>
-      <input
-        id="virtual-hosted-style"
-        v-model="urlStyle"
-        name="url_style"
-        type="radio"
-        value="virtual"
-      >
-      <label for="virtual-hosted-style">Virtual-hosted style</label>
-    </div>
-
-    <label for="region">Region</label>
+    <label
+      class="label-class"
+      for="region"
+    >
+      Region
+    </label>
     <input
       id="region"
       v-model="region"
+      class="input-class"
       type="text"
       name="region"
       placeholder="s3-ap-southeast-1"
     >
-    <label for="host">Host (leave empty if using AWS)</label>
+    <label
+      class="label-class"
+      for="host"
+    >
+      Host (leave empty if using AWS)
+    </label>
     <input
       id="host"
       v-model="endpoint"
+      class="input-class"
       type="text"
       name="host"
       placeholder="digitaloceanspaces.com"
     >
 
-    <button type="submit">
-      Submit
+    <button
+      class="bg-slate-200 border-2 py-2 hover:bg-gray-100"
+      type="submit"
+    >
+      Login
     </button>
   </form>
 </template>
+
+<style scoped>
+.input-class {
+  @apply border-2 border-gray-500 mb-2 px-2 w-[25rem];
+}
+.label-class {
+  @apply font-normal;
+}
+</style>

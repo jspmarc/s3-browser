@@ -3,6 +3,7 @@
   lang="ts"
 >
 import { ref, computed, watch } from 'vue'
+import FileItem from './file-item.vue'
 import type TObjectsList from '../../types/TObjectsList'
 import { list } from '../../controllers/S3Object'
 
@@ -16,6 +17,7 @@ const props = defineProps({
 const files = ref<string[]>([])
 const folders = ref<string[]>([])
 const folder = ref(props.folder)
+const searchQuery = ref('')
 
 defineEmits<{
   (e: 'openFile', key: string): void
@@ -31,7 +33,6 @@ const lists = computed(() => {
 
 watch(props, (newValue) => {
   folder.value = newValue.folder
-  console.log({ newValue, folder })
   getObjects()
 })
 
@@ -50,25 +51,33 @@ getObjects()
 </script>
 
 <template>
-  <ul>
-    <li
-      v-for="f in lists.folders"
-      :key="f"
-      class="cursor-pointer"
-      @click="$emit('openFolder', f)"
+  <div class="flex flex-col w-full">
+    <input
+      v-model="searchQuery"
+      class="border-4 border-slate-500 px-2"
+      type="text"
+      placeholder="Search"
     >
-      {{ f }}
-    </li>
-  </ul>
-  <hr>
-  <ul>
-    <li
-      v-for="f in lists.files"
-      :key="f"
-      class="cursor-pointer"
-      @click="$emit('openFile', f)"
-    >
-      {{ f }}
-    </li>
-  </ul>
+    <ul>
+      <file-item
+        v-for="f in lists.folders.filter((f) => new RegExp(searchQuery, 'i').test(f))"
+        :key="f"
+        class="cursor-pointer"
+        @click="$emit('openFolder', f)"
+      >
+        {{ f }}
+      </file-item>
+    </ul>
+    <hr>
+    <ul>
+      <file-item
+        v-for="f in lists.files.filter((f) => new RegExp(searchQuery, 'i').test(f))"
+        :key="f"
+        class="cursor-pointer"
+        @click="$emit('openFile', f)"
+      >
+        {{ f }}
+      </file-item>
+    </ul>
+  </div>
 </template>

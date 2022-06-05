@@ -46,16 +46,18 @@ onMounted(() => {
 </script>
 
 <template>
-  <header class="h-[var(--header-height)]">
-    <nav>
-      <a href="#/">Home</a>
-      <a :href="authRoute">Auth</a>
+  <header class="bg-gray-400 grid grid-cols-1 h-[var(--header-height)]">
+    <nav class="flex items-center justify-between px-4">
+      <a href="#/">Files</a>
+      <a :href="authRoute">Change S3</a>
     </nav>
   </header>
-  <main class="min-h-[calc(100vh-var(--outer-content-height))]">
+  <main
+    class="flex flex-col items-center max-w-full min-h-[calc(100vh-var(--outer-content-height))] overflow-auto px-8 pt-1"
+  >
     <component :is="currentView" />
   </main>
-  <footer class="h-[var(--footer-height)]">
+  <footer class="bg-gray-400 h-[var(--footer-height)] text-center w-screen">
     Created by
     <a
       href="https://jspmarc.dev"
@@ -64,3 +66,9 @@ onMounted(() => {
       Josep Marcello </a>. © Josep Marcello 2022.
   </footer>
 </template>
+
+<style scoped>
+a {
+  @apply bg-gray-400 h-full px-4 hover:bg-slate-200;
+}
+</style>

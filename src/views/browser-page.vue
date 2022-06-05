@@ -5,12 +5,14 @@
 import ObjectsPane from '../components/browser-page/objects-pane.vue'
 import { head } from '../controllers/S3Object'
 import { generateClient } from '../controllers/Client'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type TObjectHead from '../types/TObjectHead'
 
 const visited = ref<string[]>([''])
 const fileMetadata = ref<TObjectHead | null>(null)
 const baseUrl = ref('')
+
+const currentKey = computed(() => visited.value.at(-1))
 
 const openFile = (f: string) => {
   visited.value.push(f)
@@ -22,51 +24,72 @@ generateClient().then((client) => (baseUrl.value = client.generateUrl()))
 </script>
 
 <template>
-  folder: {{ visited.at(-1) }}
-  <button
-    @click="
-      () => {
-        visited.pop()
-        fileMetadata = null
-      }
-    "
-  >
-    Back
-  </button>
+  <div class="bg-gray-300 grid grid-cols-[1fr_9fr] mb-2 rounded-md w-full">
+    <button
+      class="bg-white mr-2 px-2 py-1 rounded-md hover:bg-slate-100"
+      @click="
+        () => {
+          visited.pop()
+          fileMetadata = null
+        }
+      "
+    >
+      Back
+    </button>
+    <div class="bg-white px-2 inline-block rounded-md w-full">
+      <span v-if="!fileMetadata">folder: </span>
+      <span v-else>file: </span>
+      <span class="w-full">{{ currentKey }}</span>
+    </div>
+  </div>
   <hr>
   <objects-pane
     v-if="!fileMetadata"
-    :folder="visited.at(-1)"
+    :folder="currentKey"
     @open-folder="(f) => visited.push(f)"
     @open-file="(f) => openFile(f)"
   />
-  <template v-if="fileMetadata">
+  <template v-else>
     <img
       v-if="fileMetadata.content_type.startsWith('image')"
-      :src="baseUrl + visited.at(-1)"
-      :alt="visited.at(-1)"
+      class="preview"
+      :src="baseUrl + currentKey"
+      :alt="currentKey"
     >
     <video
       v-else-if="fileMetadata.content_type.startsWith('video')"
       controls
-      :src="baseUrl + visited.at(-1)"
-      :alt="visited.at(-1)"
+      class="preview"
+      :src="baseUrl + currentKey"
+      :alt="currentKey"
       :type="fileMetadata.content_type"
     />
     <audio
       v-else-if="fileMetadata.content_type.startsWith('audio')"
       controls
-      :src="baseUrl + visited.at(-1)"
+      class="preview"
+      :src="baseUrl + currentKey"
     />
     <iframe
       v-else-if="fileMetadata.content_type.startsWith('text')"
-      :src="baseUrl + visited.at(-1)"
+      class="preview no-w"
+      :src="baseUrl + currentKey"
     />
     <iframe
       v-else
-      :src="`https://docs.google.com/gview?url=${baseUrl + visited.at(-1)}&embedded=true`"
-      style="width: 600px; height: 500px"
+      class="preview no-w"
+      :src="`https://docs.google.com/gview?url=${baseUrl + currentKey}&embedded=true`"
       frameborder="0"
     />
   </template>
 </template>
+
+<style scoped>
+.preview {
+  @apply bg-white max-h-screen min-h-[80vh] w-auto;
+}
+
+.preview.no-w {
+  @apply w-full;
+}
+</style>
