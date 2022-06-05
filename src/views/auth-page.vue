@@ -4,11 +4,15 @@
 >
 import { ref } from 'vue'
 import { useStore } from 'vuex'
-import { invoke } from '@tauri-apps/api/tauri'
+import { removeClient, initApp } from '../controllers/Client'
+
+removeClient()
+
+const store = useStore()
 
 const accessKeyId = ref('')
 const secretAccessKey = ref('')
-const urlStyle = ref('path')
+const urlStyle = ref('')
 const bucketName = ref('')
 const region = ref('')
 const endpoint = ref('')
@@ -16,25 +20,28 @@ const endpoint = ref('')
 const submit = (e: Event) => {
   e.preventDefault()
   const ep = endpoint.value ? endpoint.value : 'amazonaws.com'
-  invoke('init_app', {
-    name: bucketName.value,
-    accessKeyId: accessKeyId.value,
-    secretAccessKey: secretAccessKey.value,
-    endpoint: ep,
-    region: region.value,
-    isPathStyle: urlStyle.value === 'path',
-  })
+  initApp(
+    bucketName.value,
+    accessKeyId.value,
+    secretAccessKey.value,
+    ep,
+    region.value,
+    urlStyle.value === 'path'
+  )
     .then(() => {
       store.commit('reset')
-      store.commit('updateBaseUrl', (() => {
-        if (urlStyle.value === 'path') return `${endpoint.value}/${bucketName.value}/`
-        else if (endpoint.value.indexOf('aws') !== -1)
-          return `https://${bucketName.value}.s3-${region.value}.${endpoint.value}/`
-        else return `https://${bucketName.value}.${region.value}.${endpoint.value}/`
-      })())
+      store.commit(
+        'updateBaseUrl',
+        (() => {
+          if (urlStyle.value === 'path') return `${endpoint.value}/${bucketName.value}/`
+          else if (endpoint.value.indexOf('aws') !== -1)
+            return `https://${bucketName.value}.s3-${region.value}.${endpoint.value}/`
+          else return `https://${bucketName.value}.${region.value}.${endpoint.value}/`
+        })()
+      )
       window.location.hash = '/'
     })
-    .catch((e) => console.error(JSON.stringify(e, null, 4)))
+    .catch(console.error)
 }
 </script>
 <template>

@@ -41,11 +41,18 @@ async fn has_client(current_client: tauri::State<'_, CurrentClient>) -> Result<b
   Ok(current_client.0.lock().await.is_some())
 }
 
+#[tauri::command]
+async fn remove_client(current_client: tauri::State<'_, CurrentClient>) -> Result<(), ()> {
+  *current_client.0.lock().await = None;
+  Ok(())
+}
+
 fn main() {
   tauri::Builder::default()
     .manage(CurrentClient(Mutex::new(None)))
     .invoke_handler(tauri::generate_handler![
       init_app,
+      remove_client,
       has_client,
       list_objects,
       head_object,
