@@ -54,7 +54,7 @@ getObjects()
   <div class="flex flex-col w-full">
     <input
       v-model="searchQuery"
-      class="border-4 border-slate-500 px-2"
+      class="!w-full"
       type="text"
       placeholder="Search"
     >

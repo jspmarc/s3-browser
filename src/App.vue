@@ -72,3 +72,11 @@ a {
   @apply bg-gray-400 h-full px-4 hover:bg-slate-200;
 }
 </style>
+
+<style>
+input[type='text'],
+input[type='url'],
+input[type='password'] {
+  @apply border-2 border-gray-500 mb-2 px-2 rounded-sm w-[25rem];
+}
+</style>

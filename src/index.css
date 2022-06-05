@@ -10,7 +10,7 @@
   --outer-content-height: calc(var(--footer-height) + var(--header-height));
 
   font-family: 'Lato', sans-serif;
-  font-size: clamp(14px, 1.85vmin, 20px);
+  font-size: clamp(14px, 1.5vmin, 20px);
 }
 
 body {

@@ -146,7 +146,7 @@ const submit = (e: Event) => {
     >
 
     <button
-      class="bg-slate-200 border-2 py-2 hover:bg-gray-100"
+      class="bg-slate-200 border-2 py-2 rounded-md hover:bg-gray-100"
       type="submit"
     >
       Login
@@ -155,9 +155,6 @@ const submit = (e: Event) => {
 </template>
 
 <style scoped>
-.input-class {
-  @apply border-2 border-gray-500 mb-2 px-2 w-[25rem];
-}
 .label-class {
   @apply font-normal;
 }

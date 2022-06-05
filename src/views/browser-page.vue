@@ -26,7 +26,7 @@ generateClient().then((client) => (baseUrl.value = client.generateUrl()))
 </script>
 
 <template>
-  <div class="bg-gray-300 grid grid-cols-[1fr_9fr] mb-2 rounded-md w-full">
+  <div class="bg-gray-300 grid grid-cols-[1fr_9fr] mb-2 rounded-md w-full xl:grid-cols-[1fr_13fr]">
     <button
       class="bg-white mr-2 px-2 py-1 rounded-md hover:bg-slate-100"
       @click="
@@ -38,7 +38,9 @@ generateClient().then((client) => (baseUrl.value = client.generateUrl()))
     >
       Back
     </button>
-    <div class="bg-white px-2 inline-block rounded-md w-full">
+    <div
+      class="bg-white px-2 inline-block overflow-ellipsis overflow-hidden whitespace-nowrap rounded-md w-full"
+    >
       <span v-if="!fileMetadata">folder: </span>
       <span v-else>file: </span>
       <span class="w-full">{{ currentKey }}</span>
@@ -88,7 +90,7 @@ generateClient().then((client) => (baseUrl.value = client.generateUrl()))
 
 <style scoped>
 .preview {
-  @apply bg-white max-h-screen min-h-[80vh] w-auto;
+  @apply bg-white max-h-[85vh] min-h-[80vh] w-auto;
 }
 
 .preview.no-w {
