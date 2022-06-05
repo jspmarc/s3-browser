@@ -24,12 +24,18 @@ const open = (f: TFileNode) => {
   }
   store.commit('addKey', f)
 }
+
+const upload = () => {
+  alert('upload')
+}
 </script>
 
 <template>
-  <div class="bg-gray-300 grid grid-cols-[1fr_9fr] mb-2 rounded-md w-full xl:grid-cols-[1fr_19fr]">
+  <div
+    class="bg-gray-300 grid grid-cols-[1fr_8fr_1fr] mb-2 rounded-md w-full xl:grid-cols-[1fr_18fr_1fr]"
+  >
     <button
-      class="bg-white mr-2 px-2 py-1 rounded-md hover:bg-slate-100"
+      class="bg-white px-2 py-1 rounded-md hover:bg-slate-100"
       @click="
         () => {
           store.commit('popKey')
@@ -39,13 +45,21 @@ const open = (f: TFileNode) => {
     >
       Back
     </button>
+
     <div
-      class="bg-white px-2 inline-block overflow-ellipsis overflow-hidden whitespace-nowrap rounded-md w-full"
+      class="bg-white inline-block mx-2 overflow-ellipsis overflow-hidden px-2 whitespace-nowrap rounded-md"
     >
       <span v-if="!fileMetadata">folder: </span>
       <span v-else>file: </span>
       <span class="w-full">{{ currentObj.name ?? 'undefined' }}</span>
     </div>
+
+    <button
+      class="bg-white px-2 py-1 rounded-md hover:bg-slate-100"
+      @click="upload"
+    >
+      Upload
+    </button>
   </div>
   <hr>
   <objects-pane

@@ -5,11 +5,11 @@ use std::collections::HashMap;
 
 #[tauri::command]
 pub async fn list_objects(
-  folder: &str,
+  prefix: &str,
   current_client: tauri::State<'_, CurrentClient>,
 ) -> Result<HashMap<String, Vec<FileNode>>, InternalError> {
   if let Some(client) = current_client.0.lock().await.as_ref() {
-    client.list_objects_in_folder(folder).await
+    client.list_objects_in_folder(prefix).await
   } else {
     Err(InternalError::ClientUninitialized)
   }
@@ -17,11 +17,11 @@ pub async fn list_objects(
 
 #[tauri::command]
 pub async fn head_object(
-  file: &str,
+  key: &str,
   current_client: tauri::State<'_, CurrentClient>,
 ) -> Result<HashMap<String, String>, InternalError> {
   let result = match current_client.0.lock().await.as_ref() {
-    Some(client) => client.head_object(file).await,
+    Some(client) => client.head_object(key).await,
     _ => return Err(InternalError::ClientUninitialized),
   };
   let result = match result {
@@ -30,4 +30,16 @@ pub async fn head_object(
   };
 
   Ok(result)
+}
+
+#[tauri::command]
+pub async fn delete_object(
+  key: &str,
+  current_client: tauri::State<'_, CurrentClient>,
+) -> Result<(), InternalError> {
+  if let Some(client) = current_client.0.lock().await.as_ref() {
+    client.delete_object(key).await
+  } else {
+    Err(InternalError::ClientUninitialized)
+  }
 }

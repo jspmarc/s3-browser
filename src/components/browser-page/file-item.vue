@@ -3,6 +3,8 @@
   lang="ts"
 >
 import type TFileNode from '../../types/TFileNode'
+import { rm } from '../../controllers/S3Object'
+
 defineEmits<{
   (e: 'open'): void
 }>()
@@ -11,14 +13,16 @@ const props = defineProps<{
   file: TFileNode
 }>()
 
-const edit = (e: Event) => {
+const editEv = (e: Event) => {
   e.stopPropagation()
   alert(`edit ${props.file.name} is todo`)
 }
 
-const rm = (e: Event) => {
+const rmEv = (e: Event) => {
   e.stopPropagation()
-  alert(`delete ${props.file.name} todo`)
+  rm(props.file.s3_key)
+    .then(() => alert(`delete ${props.file.name} todo`))
+    .catch(console.error)
 }
 </script>
 
@@ -33,13 +37,13 @@ const rm = (e: Event) => {
     </span>
     <button
       class="bg-blue-400 hover:bg-blue-600 hover:text-white"
-      @click="edit"
+      @click="editEv"
     >
       edit
     </button>
     <button
       class="bg-red-400 hover:bg-red-600 hover:text-white"
-      @click="rm"
+      @click="rmEv"
     >
       delete
     </button>

@@ -57,6 +57,7 @@ fn main() {
       has_client,
       list_objects,
       head_object,
+      delete_object,
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

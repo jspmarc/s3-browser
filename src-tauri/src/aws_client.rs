@@ -186,4 +186,27 @@ impl AwsClient {
     retval.insert("content_type".into(), content_type);
     Ok(retval)
   }
+
+  /// DELETE an object with `key`
+  /// returns a HashMap<String, String> where the keys are "content_type" and "key" (as in object
+  /// key). If content_type
+  ///
+  /// # Arguments
+  ///
+  /// - `key` - object/file key/name
+  pub async fn delete_object(&self, key: &str) -> Result<(), InternalError> {
+    // get S3 client
+    let client = match self.s3_client.as_ref() {
+      Some(client) => client,
+      None => return Err(InternalError::ClientUninitialized),
+    };
+    // build request
+    let req = client.delete_object().key(key).bucket(&self.bucket_name);
+    // send and parse response
+    let res = req.send().await;
+    match res {
+      Ok(res) => Ok(()),
+      Err(e) => Err(InternalError::HeadObjectError(e.to_string())),
+    }
+  }
 }

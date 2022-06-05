@@ -1,6 +1,6 @@
-type T = {
+type TObjectHead = {
   content_type: string
   size: number
 }
 
-export default T
+export default TObjectHead
