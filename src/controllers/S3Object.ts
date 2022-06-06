@@ -1,10 +1,11 @@
 import { invoke } from '@tauri-apps/api'
 import TObjectsList from '../types/TObjectsList'
 import TObjectHead from '../types/TObjectHead'
+import TObjectUpload from '../types/TObjectUpload'
 
 export const list = async (prefix: string): Promise<TObjectsList> => {
   try {
-    const result: TObjectsList = await invoke('list_objects', { prefix })
+    const result: TObjectsList = await invoke('list_objects', { key: prefix })
     return result
   } catch (error) {
     // TODO: handle error
@@ -28,6 +29,14 @@ export const head = async (key: string) => {
 export const rm = async (key: string) => {
   try {
     await invoke('delete_object', { key })
+  } catch (error) {
+    return
+  }
+}
+
+export const putMultiple = async (objects: TObjectUpload[]) => {
+  try {
+    await invoke('put_multiple_objects', { keys: objects.map((object) => object.path) })
   } catch (error) {
     return
   }

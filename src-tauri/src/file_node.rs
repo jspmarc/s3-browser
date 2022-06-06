@@ -1,7 +1,8 @@
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 
-const FOLDER_MIME: &'static str = "inode/directory";
+// const FOLDER_MIME: &'static str = "inode/directory";
 
+#[derive(Debug)]
 pub struct FileNode {
   last_modified: Option<i64>,
   is_folder: bool,

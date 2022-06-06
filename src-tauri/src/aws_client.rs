@@ -1,9 +1,12 @@
 use crate::file_node::FileNode;
 use crate::internal_error::InternalError;
-use aws_sdk_s3::{Client, Config, Credentials, Endpoint, Region};
+use aws_sdk_s3::{
+  model::ObjectCannedAcl, types::ByteStream, Client, Config, Credentials, Endpoint, Region,
+};
+use futures::stream::{FuturesUnordered, StreamExt};
 use http::Uri;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, path::Path, str::FromStr};
 
 pub struct AwsClient {
   s3_client: Option<Client>,
@@ -205,8 +208,79 @@ impl AwsClient {
     // send and parse response
     let res = req.send().await;
     match res {
-      Ok(res) => Ok(()),
+      Ok(_) => Ok(()),
       Err(e) => Err(InternalError::HeadObjectError(e.to_string())),
+    }
+  }
+
+  /// PUT multiple objects with
+  /// returns a HashMap<String, String> where the keys are "content_type" and "key" (as in object
+  /// key). If content_type
+  ///
+  /// # Arguments
+  ///
+  /// - `key` - object/file key/name
+  pub async fn put_multiple_objects(&self, keys: Vec<&str>) -> Result<(), InternalError> {
+    // get S3 client
+    let client = match self.s3_client.as_ref() {
+      Some(client) => client,
+      None => return Err(InternalError::ClientUninitialized),
+    };
+
+    let mut errors: HashMap<String, String> = HashMap::new();
+    let futures = FuturesUnordered::new();
+    for key in &keys {
+      let path = Path::new(key);
+      if !path.exists() {
+        errors.insert(
+          key.to_string(),
+          format!("Path {} doesn't exist", path.display()),
+        );
+        break;
+      }
+
+      // TODO: Optimize this
+      // get body
+      let body = ByteStream::from_path(path).await;
+      let body = match body {
+        Ok(body) => body,
+        Err(e) => {
+          errors.insert(key.to_string(), e.to_string());
+          break;
+        }
+      };
+
+      let content_type = mime_guess::from_path(path)
+        .first_or_octet_stream()
+        .to_string();
+      // build request
+      let req = client
+        .put_object()
+        .body(body)
+        .content_type(content_type)
+        .key(key.to_owned())
+        .acl(ObjectCannedAcl::PublicRead)
+        .bucket(&self.bucket_name);
+      // send and parse response
+      futures.push(req.send())
+    }
+
+    // wait for all PUT requests to finish
+    let results = futures.collect::<Vec<_>>().await;
+    for (i, res) in results.iter().enumerate() {
+      match res {
+        Ok(_) => {}
+        Err(e) => {
+          errors.insert(keys[i].to_owned(), e.to_string());
+        }
+      }
+    }
+    print!("Done!");
+    let len = errors.len();
+    if len == 0 {
+      Ok(())
+    } else {
+      Err(InternalError::PutObjectsSomeFailed(errors))
     }
   }
 }

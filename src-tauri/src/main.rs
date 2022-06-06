@@ -58,6 +58,7 @@ fn main() {
       list_objects,
       head_object,
       delete_object,
+      put_multiple_objects,
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

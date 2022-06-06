@@ -12,7 +12,7 @@ const store = useStore()
 
 const accessKeyId = ref('')
 const secretAccessKey = ref('')
-const urlStyle = ref('')
+const urlStyle = ref('path')
 const bucketName = ref('')
 const region = ref('')
 const endpoint = ref('')

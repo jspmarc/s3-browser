@@ -5,6 +5,7 @@
 import { ref, computed } from 'vue'
 import { useStore } from 'vuex'
 import ObjectsPane from '../components/browser-page/objects-pane.vue'
+import UploadModal from '../components/browser-page/upload-modal.vue'
 import { head } from '../controllers/S3Object'
 import type TFileNode from '../types/TFileNode'
 import type TObjectHead from '../types/TObjectHead'
@@ -13,6 +14,7 @@ const store = useStore()
 
 const fileMetadata = ref<TObjectHead | null>(null)
 const baseUrl = ref(store.state.baseUrl)
+const uploading = ref(false)
 
 const currentObj = computed<TFileNode>(() => store.state.keys.at(-1))
 
@@ -26,7 +28,7 @@ const open = (f: TFileNode) => {
 }
 
 const upload = () => {
-  alert('upload')
+  uploading.value = true
 }
 </script>
 
@@ -36,6 +38,7 @@ const upload = () => {
   >
     <button
       class="bg-white px-2 py-1 rounded-md hover:bg-slate-100"
+      :disabled="store.state.keys.length === 1"
       @click="
         () => {
           store.commit('popKey')
@@ -56,6 +59,7 @@ const upload = () => {
 
     <button
       class="bg-white px-2 py-1 rounded-md hover:bg-slate-100"
+      :disabled="!currentObj.is_folder"
       @click="upload"
     >
       Upload
@@ -100,6 +104,11 @@ const upload = () => {
       frameborder="0"
     />
   </template>
+
+  <upload-modal
+    v-if="uploading"
+    @close="() => (uploading = false)"
+  />
 </template>
 
 <style scoped>
@@ -109,5 +118,9 @@ const upload = () => {
 
 .preview.no-w {
   @apply w-full;
+}
+
+button[disabled] {
+  @apply bg-gray-500 cursor-not-allowed text-white hover:bg-gray-500;
 }
 </style>

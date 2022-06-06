@@ -59,6 +59,7 @@ version = "0.1.0"
 dependencies = [
  "aws-config",
  "aws-sdk-s3",
+ "futures",
  "http",
  "mime",
  "mime_guess",
