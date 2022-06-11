@@ -1,4 +1,4 @@
-use crate::{object_put::ObjectPut, file_node::FileNode, internal_error::InternalError};
+use crate::{file_node::FileNode, internal_error::InternalError, object_put::ObjectPut};
 use aws_sdk_s3::{
   model::ObjectCannedAcl, types::ByteStream, Client, Config, Credentials, Endpoint, Region,
 };

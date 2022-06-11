@@ -38,10 +38,13 @@ const addFiles = () => {
 
 const cancel = async () => {
   if (
-    await dialog.confirm('Are you sure you want to cancel?\nThis will remove all selected files from selection', {
-      title: 'Cancel?',
-      type: 'warning',
-    })
+    await dialog.confirm(
+      'Are you sure you want to cancel?\nThis will remove all selected files from selection',
+      {
+        title: 'Cancel?',
+        type: 'warning',
+      }
+    )
   ) {
     files.value.clear()
     emit('close')
@@ -66,12 +69,12 @@ const upload = async () => {
 
   try {
     await putMultiple(Array.from(files.value))
-    await dialog.message('All files have been uploaded', { 
+    await dialog.message('All files have been uploaded', {
       type: 'info',
-      title: 'uploading successful'
+      title: 'uploading successful',
     })
     emit('close')
-  } catch(e: any) {
+  } catch (e: any) {
     dialog.message(e, {
       title: 'some upload failed',
       type: 'error',

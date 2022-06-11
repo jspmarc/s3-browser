@@ -6,8 +6,8 @@
 mod aws_client;
 mod file_node;
 mod internal_error;
-mod tauri_commands;
 mod object_put;
+mod tauri_commands;
 use tauri::async_runtime::Mutex;
 use tauri_commands::*;
 
