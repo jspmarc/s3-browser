@@ -1,5 +1,4 @@
-use crate::file_node::FileNode;
-use crate::internal_error::InternalError;
+use crate::{object_put::ObjectPut, file_node::FileNode, internal_error::InternalError};
 use aws_sdk_s3::{
   model::ObjectCannedAcl, types::ByteStream, Client, Config, Credentials, Endpoint, Region,
 };
@@ -219,8 +218,8 @@ impl AwsClient {
   ///
   /// # Arguments
   ///
-  /// - `key` - object/file key/name
-  pub async fn put_multiple_objects(&self, keys: Vec<&str>) -> Result<(), InternalError> {
+  /// - `objects` - objects detail
+  pub async fn put_multiple_objects(&self, objects: Vec<ObjectPut>) -> Result<(), InternalError> {
     // get S3 client
     let client = match self.s3_client.as_ref() {
       Some(client) => client,
@@ -229,11 +228,11 @@ impl AwsClient {
 
     let mut errors: HashMap<String, String> = HashMap::new();
     let futures = FuturesUnordered::new();
-    for key in &keys {
-      let path = Path::new(key);
+    for object in &objects {
+      let path = Path::new(&object.path);
       if !path.exists() {
         errors.insert(
-          key.to_string(),
+          object.path.to_owned(),
           format!("Path {} doesn't exist", path.display()),
         );
         break;
@@ -245,7 +244,7 @@ impl AwsClient {
       let body = match body {
         Ok(body) => body,
         Err(e) => {
-          errors.insert(key.to_string(), e.to_string());
+          errors.insert(object.path.to_owned(), e.to_string());
           break;
         }
       };
@@ -258,7 +257,7 @@ impl AwsClient {
         .put_object()
         .body(body)
         .content_type(content_type)
-        .key(key.to_owned())
+        .key(object.key.to_owned())
         .acl(ObjectCannedAcl::PublicRead)
         .bucket(&self.bucket_name);
       // send and parse response
@@ -271,7 +270,7 @@ impl AwsClient {
       match res {
         Ok(_) => {}
         Err(e) => {
-          errors.insert(keys[i].to_owned(), e.to_string());
+          errors.insert(objects[i].path.to_owned(), e.to_string());
         }
       }
     }

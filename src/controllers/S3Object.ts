@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api'
-import TObjectsList from '../types/TObjectsList'
-import TObjectHead from '../types/TObjectHead'
-import TObjectUpload from '../types/TObjectUpload'
+import type TObjectsList from '../types/TObjectsList'
+import type TObjectHead from '../types/TObjectHead'
+import type TObjectPut from '../types/TObjectPut'
 
 export const list = async (prefix: string): Promise<TObjectsList> => {
   try {
@@ -34,9 +34,9 @@ export const rm = async (key: string) => {
   }
 }
 
-export const putMultiple = async (objects: TObjectUpload[]) => {
+export const putMultiple = async (objects: TObjectPut[]) => {
   try {
-    await invoke('put_multiple_objects', { keys: objects.map((object) => object.path) })
+    await invoke('put_multiple_objects', { objects })
   } catch (error) {
     return
   }

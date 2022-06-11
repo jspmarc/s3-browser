@@ -4,12 +4,16 @@
 >
 import { dialog } from '@tauri-apps/api'
 import { ref } from 'vue'
+import { useStore } from 'vuex'
 import { putMultiple } from '../../controllers/S3Object'
-import type TObjectUpload from '../../types/TObjectUpload'
+import type TObjectPut from '../../types/TObjectPut'
+import { currentKey } from '../../helpers/store'
 
-const files = ref<Set<TObjectUpload>>(new Set())
+const store = useStore()
 
-defineEmits<(e: 'close') => void>()
+const files = ref<Set<TObjectPut>>(new Set())
+
+const emit = defineEmits<(e: 'close') => void>()
 
 const addFiles = () => {
   dialog
@@ -25,20 +29,22 @@ const addFiles = () => {
       f.forEach((f) =>
         files.value.add({
           path: f,
-          key: f,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          key: currentKey(store) + f.split('/').at(-1)!,
         })
       )
     })
 }
 
-const removeAll = async () => {
+const cancel = async () => {
   if (
-    await dialog.confirm('Are you sure you want to remove all files?', {
-      title: 'remove all files?',
+    await dialog.confirm('Are you sure you want to cancel?\nThis will remove all selected files from selection', {
+      title: 'Cancel?',
       type: 'warning',
     })
   ) {
     files.value.clear()
+    emit('close')
   }
 }
 
@@ -58,12 +64,19 @@ const upload = async () => {
 
   if (!yes) return
 
-  putMultiple(Array.from(files.value)).catch((e: any) =>
+  try {
+    await putMultiple(Array.from(files.value))
+    await dialog.message('All files have been uploaded', { 
+      type: 'info',
+      title: 'uploading successful'
+    })
+    emit('close')
+  } catch(e: any) {
     dialog.message(e, {
       title: 'some upload failed',
       type: 'error',
     })
-  )
+  }
 }
 </script>
 
@@ -71,13 +84,6 @@ const upload = async () => {
   <div
     class="absolute bg-black bg-opacity-90 flex flex-col h-[100vh] items-center justify-center overflow-hidden top-0 w-[100vw] z-50"
   >
-    <button
-      class="bg-red-400 text-center mb-2 px-2 py-1 rounded-md hover:bg-red-600 hover:text-white"
-      @click="$emit('close')"
-    >
-      X
-    </button>
-
     <div class="bg-slate-400 flex flex-col items-center h-3/4 p-2 rounded-md w-3/4">
       <div class="mb-2">
         <button
@@ -88,9 +94,9 @@ const upload = async () => {
         </button>
         <button
           class="bg-red-400 px-2 py-1 rounded-md hover:bg-red-600 hover:text-white"
-          @click="removeAll"
+          @click="cancel"
         >
-          Remove all
+          Cancel
         </button>
       </div>
 
@@ -107,15 +113,24 @@ const upload = async () => {
         <li
           v-for="f in files"
           :key="f.key"
-          class="bg-white grid grid-cols-[9fr_1fr] my-2 px-2 py-1 rounded-md w-full"
+          class="bg-white grid grid-cols-[9fr_1fr] grid-rows-2 my-2 px-2 py-1 rounded-md w-full"
         >
           <span>{{ f.path }}</span>
           <button
-            class="bg-red-400 h-full rounded-md hover:bg-red-600 hover:text-white"
+            class="bg-red-400 h-full rounded-md row-span-2 hover:bg-red-600 hover:text-white"
             @click="files.delete(f)"
           >
             d
           </button>
+          <div class="flex flex-row gap-4 px-2">
+            <label :for="`file-key-${f.path}`">Key</label>
+            <input
+              :id="`file-key-${f.path}`"
+              v-model="f.key"
+              class="!w-full"
+              type="text"
+            >
+          </div>
         </li>
       </ul>
     </div>

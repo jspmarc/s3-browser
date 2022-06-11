@@ -1,6 +1,4 @@
-use crate::file_node::FileNode;
-use crate::internal_error::InternalError;
-use crate::CurrentClient;
+use crate::{CurrentClient, internal_error::InternalError, file_node::FileNode, object_put::ObjectPut};
 use std::collections::HashMap;
 
 #[tauri::command]
@@ -47,11 +45,11 @@ pub async fn delete_object(
 
 #[tauri::command]
 pub async fn put_multiple_objects(
-  keys: Vec<&str>,
+  objects: Vec<ObjectPut>,
   current_client: tauri::State<'_, CurrentClient>,
 ) -> Result<(), InternalError> {
   if let Some(client) = current_client.0.lock().await.as_ref() {
-    client.put_multiple_objects(keys).await
+    client.put_multiple_objects(objects).await
   } else {
     Err(InternalError::ClientUninitialized)
   }
