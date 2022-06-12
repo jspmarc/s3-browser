@@ -3,7 +3,8 @@
   lang="ts"
 >
 import { ref, computed } from 'vue'
-import ObjectsPane from '../components/browser-page/objects-pane.vue'
+import ObjectsList from '../components/browser-page/objects-list.vue'
+import ObjectPreviewer from '../components/browser-page/object-previewer.vue'
 import UploadModal from '../components/browser-page/upload-modal.vue'
 import { head } from '../controllers/S3Object'
 import { useStore } from '../helpers/store'
@@ -13,7 +14,6 @@ import type TObjectHead from '../types/TObjectHead'
 const store = useStore()
 
 const fileMetadata = ref<TObjectHead | null>(null)
-const baseUrl = ref(store.state.baseUrl)
 const uploading = ref(false)
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -67,44 +67,17 @@ const upload = () => {
     </button>
   </div>
   <hr>
-  <objects-pane
+
+  <objects-list
     v-if="!fileMetadata"
     :folder="currentObj.s3_key"
     @open="(f) => open(f)"
   />
-  <template v-else>
-    <img
-      v-if="fileMetadata.content_type.startsWith('image')"
-      class="preview media"
-      :src="baseUrl + currentObj.s3_key"
-      :alt="`${currentObj.name} failed to load.`"
-    >
-    <video
-      v-else-if="fileMetadata.content_type.startsWith('video')"
-      controls
-      class="preview media"
-      :src="baseUrl + currentObj.s3_key"
-      :alt="currentObj"
-      :type="fileMetadata.content_type"
-    />
-    <audio
-      v-else-if="fileMetadata.content_type.startsWith('audio')"
-      controls
-      class="preview media"
-      :src="baseUrl + currentObj.s3_key"
-    />
-    <iframe
-      v-else-if="fileMetadata.content_type.startsWith('text')"
-      class="preview no-w"
-      :src="baseUrl + currentObj.s3_key"
-    />
-    <iframe
-      v-else
-      class="preview no-w"
-      :src="`https://docs.google.com/gview?url=${baseUrl + currentObj.s3_key}&embedded=true`"
-      frameborder="0"
-    />
-  </template>
+  <object-previewer
+    v-else
+    :file-metadata="fileMetadata"
+    :current-obj="currentObj"
+  />
 
   <upload-modal
     v-if="uploading"
@@ -113,18 +86,6 @@ const upload = () => {
 </template>
 
 <style scoped>
-.preview {
-  @apply bg-white max-h-[85vh] min-h-[80vh] rounded-md w-auto;
-}
-
-.preview.media {
-  @apply bg-transparent object-contain;
-}
-
-.preview.no-w {
-  @apply w-full;
-}
-
 button[disabled] {
   @apply bg-gray-500 cursor-not-allowed text-white hover:bg-gray-500;
 }
