@@ -74,14 +74,14 @@ const upload = () => {
   <template v-else>
     <img
       v-if="fileMetadata.content_type.startsWith('image')"
-      class="preview"
+      class="preview media"
       :src="baseUrl + currentObj.s3_key"
       :alt="`${currentObj.name} failed to load.`"
     >
     <video
       v-else-if="fileMetadata.content_type.startsWith('video')"
       controls
-      class="preview"
+      class="preview media"
       :src="baseUrl + currentObj.s3_key"
       :alt="currentObj"
       :type="fileMetadata.content_type"
@@ -89,7 +89,7 @@ const upload = () => {
     <audio
       v-else-if="fileMetadata.content_type.startsWith('audio')"
       controls
-      class="preview"
+      class="preview media"
       :src="baseUrl + currentObj.s3_key"
     />
     <iframe
@@ -114,6 +114,10 @@ const upload = () => {
 <style scoped>
 .preview {
   @apply bg-white max-h-[85vh] min-h-[80vh] rounded-md w-auto;
+}
+
+.preview.media {
+  @apply bg-transparent object-contain;
 }
 
 .preview.no-w {
