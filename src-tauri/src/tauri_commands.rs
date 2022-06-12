@@ -37,7 +37,6 @@ pub async fn delete_object(
   key: &str,
   current_client: tauri::State<'_, CurrentClient>,
 ) -> Result<(), InternalError> {
-  print!("delet_bject command called with key: {}", key);
   if let Some(client) = current_client.0.lock().await.as_ref() {
     client.delete_object(key).await
   } else {

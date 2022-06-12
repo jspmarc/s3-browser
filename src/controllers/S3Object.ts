@@ -35,9 +35,5 @@ export const rm = async (key: string) => {
 }
 
 export const putMultiple = async (objects: TObjectPut[]) => {
-  try {
-    await invoke('put_multiple_objects', { objects })
-  } catch (error) {
-    return
-  }
+  await invoke('put_multiple_objects', { objects })
 }

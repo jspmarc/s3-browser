@@ -76,15 +76,14 @@ const upload = async () => {
     })
     emit('close')
   } catch (e) {
-    console.error(e)
-    if (typeof e === 'string') {
-      dialog.message(e, {
-        title: 'some upload failed',
-        type: 'error',
-      })
-    } else {
-      dialog.message(JSON.stringify(e), {
-        title: 'some upload failed',
+    const err = (e as { PutObjectsSomeFailed: { [key: string]: string } }).PutObjectsSomeFailed
+    if (err) {
+      let message = ''
+      for (const key in err) {
+        message += `${key},\n`
+      }
+      dialog.message(message, {
+        title: 'Some Files Failed to Upload',
         type: 'error',
       })
     }
