@@ -3,9 +3,9 @@
   lang="ts"
 >
 import { dialog, clipboard } from '@tauri-apps/api'
-import { useStore } from 'vuex'
 import type TFileNode from '../../types/TFileNode'
 import { rm } from '../../controllers/S3Object'
+import { useStore } from '../../helpers/store'
 
 const store = useStore()
 

@@ -3,8 +3,8 @@
   lang="ts"
 >
 import { ref } from 'vue'
-import { useStore } from 'vuex'
 import { removeClient, initApp } from '../controllers/Client'
+import { useStore } from '../helpers/store'
 
 removeClient()
 

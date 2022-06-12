@@ -3,10 +3,10 @@
   lang="ts"
 >
 import { ref, computed } from 'vue'
-import { useStore } from 'vuex'
 import ObjectsPane from '../components/browser-page/objects-pane.vue'
 import UploadModal from '../components/browser-page/upload-modal.vue'
 import { head } from '../controllers/S3Object'
+import { useStore } from '../helpers/store'
 import type TFileNode from '../types/TFileNode'
 import type TObjectHead from '../types/TObjectHead'
 
@@ -16,7 +16,8 @@ const fileMetadata = ref<TObjectHead | null>(null)
 const baseUrl = ref(store.state.baseUrl)
 const uploading = ref(false)
 
-const currentObj = computed<TFileNode>(() => store.state.keys.at(-1))
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const currentObj = computed<TFileNode>(() => store.state.keys.at(-1)!)
 
 const open = (f: TFileNode) => {
   if (!f.is_folder) {

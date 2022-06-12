@@ -4,12 +4,9 @@
 >
 import { dialog } from '@tauri-apps/api'
 import { ref } from 'vue'
-import { useStore } from 'vuex'
 import { putMultiple } from '../../controllers/S3Object'
 import type TObjectPut from '../../types/TObjectPut'
 import { currentKey } from '../../helpers/store'
-
-const store = useStore()
 
 const files = ref<TObjectPut[]>([])
 
@@ -30,7 +27,7 @@ const addFiles = () => {
         files.value.push({
           path: f,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          key: currentKey(store) + f.split('/').at(-1)!,
+          key: currentKey() + f.split('/').at(-1)!,
           acl: 'Private',
         })
       )
