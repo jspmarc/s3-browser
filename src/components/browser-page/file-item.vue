@@ -2,9 +2,12 @@
   setup
   lang="ts"
 >
-import { dialog } from '@tauri-apps/api'
+import { dialog, clipboard } from '@tauri-apps/api'
+import { useStore } from 'vuex'
 import type TFileNode from '../../types/TFileNode'
 import { rm } from '../../controllers/S3Object'
+
+const store = useStore()
 
 const emit = defineEmits<{
   (e: 'open'): void
@@ -49,6 +52,12 @@ const rmEv = async (e: Event) => {
     }
   }
 }
+
+const copyEv = (e: Event) => {
+  e.stopPropagation()
+  const url: string = store.state.baseUrl
+  clipboard.writeText(url + props.file.s3_key)
+}
 </script>
 
 <template>
@@ -61,6 +70,12 @@ const rmEv = async (e: Event) => {
       {{ file.name }}
     </span>
     <template v-if="!file.is_folder">
+      <button
+        class="bg-green-400 hover:bg-green-600 hover:text-white"
+        @click="copyEv"
+      >
+        copy
+      </button>
       <button
         class="bg-blue-400 hover:bg-blue-600 hover:text-white"
         @click="editEv"
