@@ -4,34 +4,17 @@ import type TObjectHead from '../types/TObjectHead'
 import type TObjectPut from '../types/TObjectPut'
 
 export const list = async (prefix: string): Promise<TObjectsList> => {
-  try {
-    const result: TObjectsList = await invoke('list_objects', { key: prefix })
-    return result
-  } catch (error) {
-    // TODO: handle error
-    return { files: [], folders: [] }
-  }
+  const result: TObjectsList = await invoke('list_objects', { key: prefix })
+  return result
 }
 
 export const head = async (key: string) => {
-  try {
-    const result: TObjectHead = await invoke('head_object', { key })
-    return result
-  } catch (error) {
-    // TODO: handle error
-    return {
-      content_type: 'application/octet-stream',
-      size: 0,
-    }
-  }
+  const result: TObjectHead = await invoke('head_object', { key })
+  return result
 }
 
 export const rm = async (key: string) => {
-  try {
-    await invoke('delete_object', { key })
-  } catch (error) {
-    return
-  }
+  await invoke('delete_object', { key })
 }
 
 export const putMultiple = async (objects: TObjectPut[]) => {

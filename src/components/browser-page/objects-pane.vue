@@ -47,6 +47,11 @@ const getObjects = () => {
     .catch(console.error)
 }
 
+const rm = (f: TFileNode) => {
+  const idx = files.value.findIndex((element) => element.s3_key === f.s3_key)
+  files.value.splice(idx, 1)
+}
+
 getObjects()
 </script>
 
@@ -75,6 +80,7 @@ getObjects()
         :file="f"
         class="cursor-pointer"
         @open="$emit('open', f)"
+        @delete="rm(f)"
       />
     </ul>
   </div>

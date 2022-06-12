@@ -6,8 +6,9 @@ import { dialog } from '@tauri-apps/api'
 import type TFileNode from '../../types/TFileNode'
 import { rm } from '../../controllers/S3Object'
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'open'): void
+  (e: 'delete'): void
 }>()
 
 const props = defineProps<{
@@ -19,15 +20,20 @@ const editEv = (e: Event) => {
   alert(`edit ${props.file.name} is todo`)
 }
 
-const rmEv = (e: Event) => {
+const rmEv = async (e: Event) => {
   e.stopPropagation()
-  rm(props.file.s3_key)
-    .then(() =>
-      dialog.message(`${props.file.name} is succesfully deleted`, {
+  const conf = await dialog.confirm(`Are you sure you want to delete ${props.file.name}?`, {
+    type: 'warning',
+    title: 'Delete?',
+  })
+  if (conf) {
+    try {
+      await rm(props.file.s3_key)
+      await dialog.message(`${props.file.name} is succesfully deleted`, {
         title: 'Success',
       })
-    )
-    .catch((e) => {
+      emit('delete')
+    } catch (e) {
       console.error(e)
       if (typeof e === 'string') {
         dialog.message(e, {
@@ -40,7 +46,8 @@ const rmEv = (e: Event) => {
           type: 'error',
         })
       }
-    })
+    }
+  }
 }
 </script>
 
