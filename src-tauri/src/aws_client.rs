@@ -217,7 +217,7 @@ impl AwsClient {
   /// # Arguments
   ///
   /// - `objects` - objects detail
-  pub async fn put_multiple_objects(&self, objects: Vec<ObjectPut>) -> Result<(), InternalError> {
+  pub async fn put_multiple_objects(&self, objects: &[ObjectPut]) -> Result<(), InternalError> {
     // get S3 client
     let client = match self.s3_client.as_ref() {
       Some(client) => client,
@@ -235,18 +235,17 @@ impl AwsClient {
     results.iter().for_each(|res| {
       let (path, res) = res;
       match res {
-        Ok(Err(e)) => {
-          errors.insert(path.to_string(), e.to_string());
-        }
-        Ok(_) => {}
         Err(e) => {
           errors.insert(path.to_string(), e.to_string());
         }
+        Ok(Err(e)) => {
+          errors.insert(path.to_string(), e.to_string());
+        }
+        _ => {}
       }
     });
 
-    let len = errors.len();
-    if len == 0 {
+    if errors.len() == 0 {
       Ok(())
     } else {
       Err(InternalError::PutObjectsSomeFailed(errors))

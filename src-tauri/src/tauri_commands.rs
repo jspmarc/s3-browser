@@ -50,7 +50,7 @@ pub async fn put_multiple_objects(
   current_client: tauri::State<'_, CurrentClient>,
 ) -> Result<(), InternalError> {
   if let Some(client) = current_client.0.lock().await.as_ref() {
-    client.put_multiple_objects(objects).await
+    client.put_multiple_objects(&objects).await
   } else {
     Err(InternalError::ClientUninitialized)
   }
