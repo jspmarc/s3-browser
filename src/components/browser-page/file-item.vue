@@ -23,7 +23,7 @@ const rmEv = (e: Event) => {
   e.stopPropagation()
   rm(props.file.s3_key)
     .then(() =>
-      dialog.message(`${props.file.name} is succesffuly deleted`, {
+      dialog.message(`${props.file.name} is succesfully deleted`, {
         title: 'Success',
       })
     )

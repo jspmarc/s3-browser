@@ -72,7 +72,7 @@ const upload = async () => {
     await putMultiple(Array.from(files.value))
     await dialog.message('All files have been uploaded', {
       type: 'info',
-      title: 'uploading successful',
+      title: 'Uploading successful',
     })
     emit('close')
   } catch (e) {

@@ -1,11 +1,9 @@
 use crate::{file_node::FileNode, internal_error::InternalError, object_put::ObjectPut};
-use aws_sdk_s3::{
-  model::ObjectCannedAcl, types::ByteStream, Client, Config, Credentials, Endpoint, Region,
-};
+use aws_sdk_s3::{Client, Config, Credentials, Endpoint, Region};
 use futures::stream::{FuturesUnordered, StreamExt};
 use http::Uri;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
-use std::{collections::HashMap, path::Path, str::FromStr};
+use std::{collections::HashMap, str::FromStr};
 
 pub struct AwsClient {
   s3_client: Option<Client>,
@@ -228,63 +226,25 @@ impl AwsClient {
 
     let mut errors: HashMap<String, String> = HashMap::new();
     let futures = FuturesUnordered::new();
-    for object in &objects {
-      let path = Path::new(&object.path);
-      if !path.exists() {
-        errors.insert(
-          object.path.to_owned(),
-          format!("Path {} doesn't exist", path.display()),
-        );
-        break;
-      }
-
-      // TODO: Optimize this
-      // get body
-      let body = ByteStream::from_path(path).await;
-      let body = match body {
-        Ok(body) => body,
-        Err(e) => {
-          errors.insert(object.path.to_owned(), e.to_string());
-          break;
-        }
-      };
-
-      let content_type = mime_guess::from_path(path)
-        .first_or_octet_stream()
-        .to_string();
-      let acl = match object.acl.as_str() {
-        "AuthenticatedRead" => ObjectCannedAcl::AuthenticatedRead,
-        "AwsExecRead" => ObjectCannedAcl::AwsExecRead,
-        "BucketOwnerFullControl" => ObjectCannedAcl::BucketOwnerFullControl,
-        "BucketOwnerRead" => ObjectCannedAcl::BucketOwnerRead,
-        "Private" => ObjectCannedAcl::Private,
-        "PublicRead" => ObjectCannedAcl::PublicRead,
-        "PublicReadWrite" => ObjectCannedAcl::PublicReadWrite,
-        _ => ObjectCannedAcl::PublicRead,
-      };
-      // build request
-      let req = client
-        .put_object()
-        .body(body)
-        .content_type(content_type)
-        .key(object.key.to_owned())
-        .acl(acl)
-        .bucket(&self.bucket_name);
-      // send and parse response
-      futures.push(req.send())
-    }
+    objects
+      .iter()
+      .for_each(|object| futures.push(object.put(client, &self.bucket_name)));
 
     // wait for all PUT requests to finish
     let results = futures.collect::<Vec<_>>().await;
-    for (i, res) in results.iter().enumerate() {
+    results.iter().for_each(|res| {
+      let (path, res) = res;
       match res {
+        Ok(Err(e)) => {
+          errors.insert(path.to_string(), e.to_string());
+        }
         Ok(_) => {}
         Err(e) => {
-          errors.insert(objects[i].path.to_owned(), e.to_string());
+          errors.insert(path.to_string(), e.to_string());
         }
       }
-    }
-    println!("Errors: {:#?}", errors);
+    });
+
     let len = errors.len();
     if len == 0 {
       Ok(())
