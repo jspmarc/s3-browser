@@ -3,10 +3,13 @@
   lang="ts"
 >
 import { ref, computed, watch } from 'vue'
+import { useStore } from 'vuex'
 import FileItem from './file-item.vue'
 import type TObjectsList from '../../types/TObjectsList'
 import type TFileNode from '../../types/TFileNode'
 import { list } from '../../controllers/S3Object'
+
+const store = useStore()
 
 const props = defineProps({
   folder: {
@@ -43,13 +46,20 @@ const updateLists = (l: TObjectsList) => {
 
 const getObjects = () => {
   list(currentFolderKey.value)
-    .then((v) => updateLists(v as TObjectsList))
+    .then((v: TObjectsList) => {
+      if (v.files?.length === 0 && v.folders?.length === 0 && store.state.keys.length > 1)
+        store.commit('popKey')
+      else updateLists(v)
+    })
     .catch(console.error)
 }
 
 const rm = (f: TFileNode) => {
   const idx = files.value.findIndex((element) => element.s3_key === f.s3_key)
   files.value.splice(idx, 1)
+  if (files.value.length === 0 && folders.value.length === 0 && store.state.keys.length > 1) {
+    store.commit('popKey')
+  }
 }
 
 getObjects()
