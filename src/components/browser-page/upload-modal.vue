@@ -11,7 +11,7 @@ import { currentKey } from '../../helpers/store'
 
 const store = useStore()
 
-const files = ref<Set<TObjectPut>>(new Set())
+const files = ref<TObjectPut[]>([])
 
 const emit = defineEmits<(e: 'close') => void>()
 
@@ -27,7 +27,7 @@ const addFiles = () => {
       if (typeof f === 'string') f = [f]
 
       f.forEach((f) =>
-        files.value.add({
+        files.value.push({
           path: f,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           key: currentKey(store) + f.split('/').at(-1)!,
@@ -47,13 +47,12 @@ const cancel = async () => {
       }
     )
   ) {
-    files.value.clear()
     emit('close')
   }
 }
 
 const upload = async () => {
-  if (files.value.size === 0) {
+  if (files.value.length === 0) {
     await dialog.message('Please select at least one file', {
       type: 'error',
       title: 'no files? :(',
@@ -86,8 +85,22 @@ const upload = async () => {
         title: 'Some Files Failed to Upload',
         type: 'error',
       })
+      const failedFiles: TObjectPut[] = []
+      for (const path in err) {
+        failedFiles.push({
+          path: path,
+          key: path,
+          acl: 'Private',
+        })
+      }
+      files.value = failedFiles
     }
   }
+}
+
+const removeFile = (file: TObjectPut) => {
+  const idx = files.value.findIndex((el) => el.path === file.path && el.key === file.key)
+  files.value.splice(idx, 1)
 }
 </script>
 
@@ -115,7 +128,7 @@ const upload = async () => {
         class="bg-slate-200 mb-4 px-2 py-1 rounded-md hover:bg-slate-100"
         @click="addFiles"
       >
-        <span v-if="files.size === 0"> Select </span>
+        <span v-if="files.length === 0"> Select </span>
         <span v-else> Add </span>
         files
       </button>
@@ -129,7 +142,7 @@ const upload = async () => {
           <span>{{ f.path }}</span>
           <button
             class="bg-red-400 h-full rounded-md row-span-3 hover:bg-red-600 hover:text-white"
-            @click="files.delete(f)"
+            @click="removeFile(f)"
           >
             d
           </button>
@@ -178,7 +191,7 @@ const upload = async () => {
   </div>
 </template>
 
-<style local>
+<style scoped>
 .input-container {
   @apply flex flex-row items-center gap-4 px-2;
 }
