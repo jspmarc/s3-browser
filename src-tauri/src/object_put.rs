@@ -4,4 +4,5 @@ use serde::Deserialize;
 pub struct ObjectPut {
   pub path: String,
   pub key: String,
+  pub acl: String,
 }

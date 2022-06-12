@@ -252,13 +252,23 @@ impl AwsClient {
       let content_type = mime_guess::from_path(path)
         .first_or_octet_stream()
         .to_string();
+      let acl = match object.acl.as_str() {
+        "AuthenticatedRead" => ObjectCannedAcl::AuthenticatedRead,
+        "AwsExecRead" => ObjectCannedAcl::AwsExecRead,
+        "BucketOwnerFullControl" => ObjectCannedAcl::BucketOwnerFullControl,
+        "BucketOwnerRead" => ObjectCannedAcl::BucketOwnerRead,
+        "Private" => ObjectCannedAcl::Private,
+        "PublicRead" => ObjectCannedAcl::PublicRead,
+        "PublicReadWrite" => ObjectCannedAcl::PublicReadWrite,
+        _ => ObjectCannedAcl::PublicRead,
+      };
       // build request
       let req = client
         .put_object()
         .body(body)
         .content_type(content_type)
         .key(object.key.to_owned())
-        .acl(ObjectCannedAcl::PublicRead)
+        .acl(acl)
         .bucket(&self.bucket_name);
       // send and parse response
       futures.push(req.send())
@@ -274,7 +284,7 @@ impl AwsClient {
         }
       }
     }
-    print!("Done!");
+    println!("Errors: {:#?}", errors);
     let len = errors.len();
     if len == 0 {
       Ok(())

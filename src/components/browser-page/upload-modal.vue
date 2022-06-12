@@ -31,6 +31,7 @@ const addFiles = () => {
           path: f,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           key: currentKey(store) + f.split('/').at(-1)!,
+          acl: 'Private',
         })
       )
     })
@@ -74,11 +75,19 @@ const upload = async () => {
       title: 'uploading successful',
     })
     emit('close')
-  } catch (e: any) {
-    dialog.message(e, {
-      title: 'some upload failed',
-      type: 'error',
-    })
+  } catch (e) {
+    console.error(e)
+    if (typeof e === 'string') {
+      dialog.message(e, {
+        title: 'some upload failed',
+        type: 'error',
+      })
+    } else {
+      dialog.message(JSON.stringify(e), {
+        title: 'some upload failed',
+        type: 'error',
+      })
+    }
   }
 }
 </script>
@@ -116,26 +125,62 @@ const upload = async () => {
         <li
           v-for="f in files"
           :key="f.key"
-          class="bg-white grid grid-cols-[9fr_1fr] grid-rows-2 my-2 px-2 py-1 rounded-md w-full"
+          class="bg-white grid grid-cols-[9fr_1fr] grid-rows-3 my-2 px-2 py-1 rounded-md w-full"
         >
           <span>{{ f.path }}</span>
           <button
-            class="bg-red-400 h-full rounded-md row-span-2 hover:bg-red-600 hover:text-white"
+            class="bg-red-400 h-full rounded-md row-span-3 hover:bg-red-600 hover:text-white"
             @click="files.delete(f)"
           >
             d
           </button>
-          <div class="flex flex-row gap-4 px-2">
+          <div class="input-container mb-2">
             <label :for="`file-key-${f.path}`">Key</label>
             <input
               :id="`file-key-${f.path}`"
-              v-model="f.key"
-              class="!w-full"
+              v-model.lazy="f.key"
+              class="!m-0 !w-full"
               type="text"
             >
+          </div>
+          <div class="input-container">
+            <label :for="`file-acl-${f.path}`">ACL</label>
+            <select
+              :id="`file-acl-${f.path}`"
+              v-model="f.acl"
+              class="!w-full"
+            >
+              <option value="AuthenticatedRead">
+                Authenticated read
+              </option>
+              <option value="AwsExecRead">
+                AWS exec read
+              </option>
+              <option value="BucketOwnerFullControl">
+                Bucket owner full control
+              </option>
+              <option value="BucketOwnerRead">
+                Bucket owner read
+              </option>
+              <option value="Private">
+                Private
+              </option>
+              <option value="PublicRead">
+                Public read
+              </option>
+              <option value="PublicReadWrite">
+                Public read & write
+              </option>
+            </select>
           </div>
         </li>
       </ul>
     </div>
   </div>
 </template>
+
+<style local>
+.input-container {
+  @apply flex flex-row items-center gap-4 px-2;
+}
+</style>
